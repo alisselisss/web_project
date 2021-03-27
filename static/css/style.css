@@ -1,0 +1,24 @@
+.brright {
+    border-right: 1px solid #999;
+    margin-right: 25px;
+    padding-right: 25px;
+}
+
+.opt {
+    width: 100px;
+}
+
+.itsme {
+    background-color: #e6e9ed;
+    border-radius: 20px;
+    height: 100px;
+    width: 650px;
+    margin: 20px;
+}
+
+.round {
+    width: 80px;
+    border-radius: 80px;
+    float: left;
+    margin: 10px;
+}

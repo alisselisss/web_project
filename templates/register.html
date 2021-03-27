@@ -1,0 +1,51 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+<h1>Сreate an account</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email(class="form-control", type="email") }}<br>
+        {% for error in form.email.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(class="form-control") }}<br>
+        {% for error in form.username.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        <select name="month" width="300px">
+        {% for o in form.list_of_months %}
+            <option class='opt' value="{{ o }}">{{ o }}</option>
+        {% endfor %}
+        </select>
+        <select name="day" width="300px">
+        {% for o in form.list_of_days %}
+            <option class='opt' value="{{ o }}">{{ o }}</option>
+        {% endfor %}
+        </select>
+        <select name="year" width="300px">
+        {% for o in form.list_of_years %}
+            <option class='opt' value="{{ o }}">{{ o }}</option>
+        {% endfor %}
+        </select>
+        <select name="country" width="300px">
+        {% for o in form.list_of_countries %}
+            <option class='opt' value="{{ o }}">{{ o }}</option>
+        {% endfor %}
+        </select>
+    </p>
+    <p><a class="btn btn-success" href="/">back</a>
+        {{ form.further(type="submit", class="btn btn-primary") }}</p>
+    {{message}}
+</form>
+{% endblock %}

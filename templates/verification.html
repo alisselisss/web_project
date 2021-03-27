@@ -1,0 +1,22 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+<h1>Verification</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>Мы отправили на вашу почту код для подтверждения почты....введите его</p>
+    <p>
+        {{ form.verification.label }}<br>
+        {{ form.verification(class="form-control") }}<br>
+        {% for error in form.verification.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>Не пришло письмо? <a href="/send_verification">Нажмите для повторной отправки.</a></p>
+    <p><a class="btn btn-success" href="{{ back }}">back</a>
+        {{ form.further(type="submit", class="btn btn-primary") }}</p>
+    {{ message }}
+</form>
+{% endblock %}

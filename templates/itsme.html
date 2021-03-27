@@ -1,0 +1,15 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+<p>
+    <h1>Is this your account?</h1>
+    We will send verification code to your email to reset your password<br>
+</p>
+<div class="itsme">
+    <img src="{{ userimg }}" class="round">
+    <h3>{{ user.username }}</h3>
+    <p>{{ user.about_me}}</p>
+</div>
+<p><a class="btn btn-success" href="/forgot">back</a>
+    <a class="btn btn-success" href="/send_verification">Further</a></p>
+{% endblock %}

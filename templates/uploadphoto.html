@@ -1,0 +1,12 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+    <h1>Upload a photo</h1>
+    <form action="" method="post" enctype = "multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>{{ form.upload }}</p>
+        <p><a class="btn btn-success" href="/register2">back</a>
+            {{ form.further(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message }}</div>
+    </form>
+{% endblock %}
