@@ -77,7 +77,7 @@ def login():
                                           User.username == form.login.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
-            return redirect('/account')
+            return redirect('/account/' + current_user.username)
         return render_template('login.html',
                                message="Incorrect login or password",
                                form=form)
@@ -140,7 +140,9 @@ def reqister():
             month_of_birth=form.month.data,
             day_of_birth=form.day.data,
             year_of_birth=form.year.data,
-            country=form.country.data
+            country=form.country.data,
+            followers=' ',
+            following=' '
         )
         back = '/register'
         return redirect('/send_verification')
@@ -214,13 +216,83 @@ def about_me():
         db_sess = db_session.create_session()
         db_sess.add(user)
         db_sess.commit()
-        return redirect('/account')
+        return redirect('/account/' + current_user.username)
     return render_template('aboutme.html', title='Register Form', form=form)
 
 
-@app.route('/account', methods=['GET', 'POST'])
-def account():
-    return render_template('account.html', title='')
+@app.route('/editprofile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    return render_template('editprofile.html', title='Register Form')
+
+
+@app.route('/account/<username>', methods=['GET', 'POST'])
+@login_required
+def account(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    return render_template('account.html', title='', user=user,
+                           userimg=url_for('static', filename='img/' + user.photo),
+                           css_file=url_for('static', filename='css/style.css'),
+                           str=str)
+
+
+@app.route('/subscribe/<username>', methods=['GET', 'POST'])
+@login_required
+def subscribe(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    current_user.following = ', '.join(current_user.following.split(', ') + [str(user.id)])
+    user.followers = ', '.join(user.following.split(', ') + [str(current_user.id)])
+    db_sess.merge(current_user)
+    db_sess.merge(user)
+    db_sess.commit()
+    return redirect(f'/account/{user.username}')
+
+
+@app.route('/unsubscribe/<username>', methods=['GET', 'POST'])
+@login_required
+def unsubscribe(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    following_list = current_user.following.split(', ')
+    following_list.remove(str(user.id))
+    current_user.following = ', '.join(following_list)
+    followers_list = user.followers.split(', ')
+    followers_list.remove(str(current_user.id))
+    user.followers = ', '.join(followers_list)
+    db_sess.merge(current_user)
+    db_sess.merge(user)
+    db_sess.commit()
+    return redirect(f'/account/{user.username}')
+
+
+@app.route('/following/<username>', methods=['GET', 'POST'])
+@login_required
+def following(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    return render_template('following.html', title='', user=user,
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           str=str, db_sess_query_user=db_sess.query(User), user_class=User)
+
+
+@app.route('/followers/<username>', methods=['GET', 'POST'])
+@login_required
+def followers(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    return render_template('followers.html', title='', user=user,
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           str=str, db_sess_query_user=db_sess.query(User), user_class=User)
 
 
 if __name__ == '__main__':

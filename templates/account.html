@@ -1,5 +1,20 @@
 {% extends "base_logged_in.html" %}
 
 {% block content %}
-
+<div class="user_information">
+    <img src="{{ userimg }}" class="round">
+    <h3>{{ user.username }}</h3>
+    {% if user == current_user %}
+        <a href="/editprofile" class="btn btn-success">Edit profile</a>
+    {% else %}
+        {% if str(user.id) not in current_user.following.split() %}
+            <a href="/subscribe/{{ user.username }}" class="btn btn-success">Subscribe to</a>
+        {% else %}
+            <a href="/unsubscribe/{{ user.username }}" class="btn btn-success">Unsubscribe</a>
+        {% endif %}
+    {% endif %}
+    <p>{{ user.about_me }}</p>
+    <a href="/followers/{{ user.username }}"> {{ user.followers.split(', ') |length - 1}} followers</a>
+    <a href="/following/{{ user.username }}"> {{ user.following.split(', ') |length - 1}} following</a>
+</div><hr>
 {% endblock %}

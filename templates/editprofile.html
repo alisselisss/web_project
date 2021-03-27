@@ -1,0 +1,6 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<p>тут будет редактирование/настройки мэйби</p>
+<a class="btn btn-success" href="/account/{{ current_user.username }}">Save</a>
+{% endblock %}

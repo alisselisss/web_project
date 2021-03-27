@@ -1,0 +1,23 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<p><a class="btn btn-success" href="/account/{{ user.username }}">back</a>
+    <h1>Subscribers</h1>
+</p>
+<div class="followers_list">
+    {% if user.followers.split(', ') |length != 1 %}
+        {% for id in user.followers.split(', ') %}
+        {% set subscribed_user = db_sess_query_user.filter(user_class.id == id).first() %}
+            {% if subscribed_user %}
+                <div class="itsme">
+                    <img src="{{ url_for('static', filename='img/' + subscribed_user.photo) }}" class="round">
+                    <a href="/account/{{ subscribed_user.username }}">{{ subscribed_user.username }}</a>
+                    <p>{{ subscribed_user.about_me}}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>no subscribers</p>
+    {% endif %}
+</div>
+{% endblock %}
