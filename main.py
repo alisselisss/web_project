@@ -43,16 +43,17 @@ migrate = Migrate(app, db)
 mail = Mail(app)
 
 
+
+def main():
+    db_session.global_init("db/twitter2.db")
+    app.run(host='127.0.0.1', port=8080)
+
+
 @app.route('/')
 @app.route('/index')
 def welcome_page():
     db_sess = db_session.create_session()
-    return render_template('welcome.html', title='титле....')
-
-
-def main():
-    db_session.global_init("db/twitter2.db")
-    app.run(host='127.0.0.1', port=8000)
+    return render_template('welcome.html', title='Добро пожаловать', bg_text='')
 
 
 @login_manager.user_loader
@@ -72,17 +73,19 @@ def logout():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.login.data or
-                                          User.username == form.login.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect('/account/' + current_user.username)
-        return render_template('login.html',
-                               message="Incorrect login or password",
-                               form=form)
+        try:
+            db_sess = db_session.create_session()
+            user = db_sess.query(User).filter(User.email == form.login.data or
+                                                    User.username == form.login.data).first()
+            if user and user.check_password(form.password.data):
+                login_user(user, remember=form.remember_me.data)
+                return redirect('/account/' + current_user.username)
+        except Exception:
+                return render_template('login.html',
+                            message="Такого пользоватея не существует",
+                            form=form, bg_size=200)
     return render_template('login.html', title='Authorization', form=form,
-                           css_file=url_for('static', filename='css/style.css'))
+                                css_file=url_for('static', filename='css/style.css'))
 
 
 @app.route('/send_verification')
@@ -216,7 +219,7 @@ def about_me():
         db_sess = db_session.create_session()
         db_sess.add(user)
         db_sess.commit()
-        return redirect('/account/' + current_user.username)
+        return redirect('/account/' + user.username)
     return render_template('aboutme.html', title='Register Form', form=form)
 
 
@@ -293,6 +296,63 @@ def followers(username):
                            url_for=url_for,
                            css_file=url_for('static', filename='css/style.css'),
                            str=str, db_sess_query_user=db_sess.query(User), user_class=User)
+
+
+@app.route('/account_settings/<username>', methods=['GET', 'POST'])
+@login_required
+def account_settings(username):
+    return render_template('accountsettings.html', title='', user=current_user,
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/delete_account/<username>', methods=['GET', 'POST'])
+@login_required
+def delete_account(username):
+    db_sess = db_session.create_session()
+    return render_template('deleteaccount.html', title='', user=current_user,
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/delete/<username>', methods=['GET', 'POST'])
+@login_required
+def delete(username):
+    db_sess = db_session.create_session()
+
+    for id in current_user.following.split(', '):
+        user = db_sess.query(User).filter(User.id == id).first()
+        if user:
+            followers_list = user.followers.split(', ')
+            followers_list.remove(str(current_user.id))
+            user.followers = ', '.join(followers_list)
+            db_sess.merge(user)
+
+    for id in current_user.followers.split(', '):
+        user = db_sess.query(User).filter(User.id == id).first()
+        if user:
+            following_list = user.following.split(', ')
+            following_list.remove(str(current_user.id))
+            user.following = ', '.join(following_list)
+            db_sess.merge(user)
+
+    db_sess.delete(current_user)
+    db_sess.commit()
+    return redirect('/')
+
+
+@app.route('/privacy_and_security/<username>', methods=['GET', 'POST'])
+@login_required
+def privacy_and_security(username):
+    return render_template('privacyandsecurity.html', title='', user=current_user,
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Privacy and security'
+                           )
 
 
 if __name__ == '__main__':

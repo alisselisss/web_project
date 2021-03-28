@@ -21,4 +21,4 @@ class RegisterForm(FlaskForm):
     day = SelectField('Day', validators=[DataRequired()], choices=list_of_days)
     year = SelectField('Year', validators=[DataRequired()], choices=list_of_years)
     country = SelectField('Country', validators=[DataRequired()], choices=list_of_countries)
-    further = SubmitField('Further')
+    further = SubmitField('further')
