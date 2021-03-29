@@ -2,7 +2,7 @@
 
 {% block content %}
 <p>
-    <h1>Is this your account?</h1>
+<h1 align="center"><font face="fantasy">Is this your account?</font></h1><br>
     We will send verification code to your email to reset your password<br>
 </p>
 <div class="itsme">
@@ -10,6 +10,8 @@
     <h3>{{ user.username }}</h3>
     <p>{{ user.about_me}}</p>
 </div>
-<p><a class="btn btn-success" href="/password_reset">back</a>
-    <a class="btn btn-success" href="/send_verification">Further</a></p>
+<br>
+<div class="move">
+<p><a class="btn btn-secondary" href="/password_reset">back</a>
+    <a class="btn btn-secondary" href="/send_verification">further</a></p></div>
 {% endblock %}

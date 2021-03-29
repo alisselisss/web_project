@@ -6,6 +6,7 @@
     <h3>{{ user.username }}</h3>
     {% if user == current_user %}
         <a href="/editprofile" class="btn btn-success">Edit profile</a>
+        <a href="/account_settings/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/settings.png') }}" width="25px"></a>
     {% else %}
         {% if str(user.id) not in current_user.following.split() %}
             <a href="/subscribe/{{ user.username }}" class="btn btn-success">Subscribe to</a>

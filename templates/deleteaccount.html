@@ -1,0 +1,30 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<a href="/account/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
+<div class="block">
+    <div class="params">
+        <table>
+        <tr><td><h2 class="">Settings</h2></td></tr>
+        {% if params == 'Account settings' %}
+            <tr><td class="selected"><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
+            <tr><td><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+        {% else %}
+            <tr><td><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
+            <tr><td class="selected"><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+        {% endif %}
+        </table>
+    </div>
+    <div class="information">
+        <table class="table_information">
+            <tr><td><h2 class="">{{ params }}</h2></td></tr>
+            <tr><td><h3>You are going to delete your account</h3>
+                <p>Remember that this action cannot be undone and you will not be able to restore your account in the future.
+                    All your data will be lost, your old posts will also be deleted.</p>
+                <p>Are you sure you want to delete your account?</p>
+                <a href="/delete/{{ current_user.username }}">Yes, delete my account.</a>
+            </td></tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

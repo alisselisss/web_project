@@ -1,7 +1,8 @@
 {% extends "base_login.html" %}
 
 {% block content %}
-<h1>Сreate an account</h1>
+<br>
+<h1 align="center"><font face="fantasy">Сreate an account</font></h1>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <p>
@@ -13,8 +14,9 @@
             </p>
         {% endfor %}
     </p>
-    <p><a class="btn btn-success" href="/upload_photo">back</a>
-        {{ form.further(type="submit", class="btn btn-primary") }}</p>
+    <div class="move"><br>
+    <p><a class="btn btn-secondary" href="/upload_photo">back</a>
+        {{ form.further(type="submit", class="btn btn-secondary") }}</p></div>
     {{ message }}
 </form>
 {% endblock %}

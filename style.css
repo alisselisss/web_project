@@ -1,0 +1,93 @@
+.brright {
+    border-right: 1px solid #999;
+    margin-right: 25px;
+    padding-right: 25px;
+}
+
+.opt {
+    width: 100px;
+}
+
+.itsme {
+    background-color: #e6e9ed;
+    border-radius: 20px;
+    height: 100px;
+    width: 650px;
+    margin: 20px;
+}
+
+.round {
+    width: 80px;
+    border-radius: 80px;
+    float: left;
+    margin: 10px;
+    font-size: 27px;
+}
+
+.params {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    float: left;
+    position: absolute;
+    width: 200px;
+}
+
+.block {
+    margin: 40px;
+}
+
+.selected {
+    border-right: 3px solid #424954;
+    background: #f0f2f5;
+}
+
+table {
+    border: 1px solid #e9ecf2;
+    border-radius: 10px;
+    width: 300px;
+    margin-left: 50px;
+}
+
+.information {
+    margin-left: 325px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    position: absolute;
+    width: 500px;
+}
+
+td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    border-bottom: 1px solid #e9ecf2;
+}
+
+.icon {
+    width: 30px;
+    border-radius: 30px;
+    float: left;
+    margin: 20px;
+    font-size: 27px;
+}
+
+.table_information {
+    width: 600px;
+}
+table a, .table_information a {
+    color: #081e45;
+    display: block;
+    height: 100%;
+}
+
+table p {
+    color: #727985;
+}
+
+.settingsback {
+    margin-bottom: 0px;
+    float:left;
+    position: absolute;
+}

@@ -1,7 +1,7 @@
 {% extends "base_login.html" %}
 
 {% block content %}
-<h1>Password recovery</h1>
+<h1 align="center"><font face="fantasy">Password recovery</font></h1><br>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <p>
@@ -13,8 +13,9 @@
             </p>
         {% endfor %}
     </p>
-    <p><a class="btn btn-success" href="/login">back</a>
-        {{ form.search(type="submit", class="btn btn-primary") }}</p>
+    <div class="move"><br>
+    <p><a class="btn btn-secondary" href="/login">back</a>
+        {{ form.search(type="submit", class="btn btn-primary") }}</p></div>
     {{ message }}
 </form>
 {% endblock %}

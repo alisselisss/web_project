@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.parallax {
+    /* The image used */
+    background-image: url("static/img/img_parallax.jpg");
+    filter: alpha(Opacity=80);
+    opacity: 0.8;
+    /* Set a specific height */
+    min-height: 200px;
+
+    /* Create the parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.move {
+    text-align: center;
+    }
+
+</style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet"
@@ -13,10 +36,21 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-light bg-light">
-            <h1 class="navbar-brand" href="#">должно ли тут быть название? иконка?? я не знаю...</h1>
+        <nav class="navbar navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">
+                <img src="static/img/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                StarTwi
+            </a>
+            <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+      </form>
         </nav>
     </header>
+    <div class="parallax"><h1 align="center"><br><font size="10" color="#E0FFFF" face="fantasy"><b>
+        <i>{{ bg_text }}</i></b></font>
+        </h1>
+        </div>
     <main role="main" class="container">
         {% block content %}{% endblock %}
     </main>
