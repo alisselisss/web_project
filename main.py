@@ -16,6 +16,7 @@ from data.users import User
 from data import db_session
 from forms.AboutMeForm import AboutMeForm
 from forms.ChangePasswordForm import ChangePasswordForm
+from forms.ChangePasswordOldPasswordForm import ChangePasswordOldPasswordForm
 from forms.ForgotForm import ForgotForm
 from forms.LoginForm import LoginForm
 from forms.RegisterForm import RegisterForm
@@ -41,7 +42,6 @@ manager.add_command('db', MigrateCommand)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
-
 
 
 def main():
@@ -76,16 +76,16 @@ def login():
         try:
             db_sess = db_session.create_session()
             user = db_sess.query(User).filter(User.email == form.login.data or
-                                                    User.username == form.login.data).first()
+                                              User.username == form.login.data).first()
             if user and user.check_password(form.password.data):
                 login_user(user, remember=form.remember_me.data)
                 return redirect('/account/' + current_user.username)
         except Exception:
-                return render_template('login.html',
-                            message="Такого пользоватея не существует",
-                            form=form, bg_size=200)
+            return render_template('login.html',
+                                   message="Такого пользоватея не существует",
+                                   form=form, bg_size=200)
     return render_template('login.html', title='Authorization', form=form,
-                                css_file=url_for('static', filename='css/style.css'))
+                           css_file=url_for('static', filename='css/style.css'))
 
 
 @app.route('/send_verification')
@@ -352,6 +352,58 @@ def privacy_and_security(username):
                            url_for=url_for,
                            css_file=url_for('static', filename='css/style.css'),
                            params='Privacy and security'
+                           )
+
+
+@app.route('/change_old_password', methods=['GET', 'POST'])
+@login_required
+def change_old_password():
+    db_sess = db_session.create_session()
+
+    form = ChangePasswordOldPasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password.data):
+            return render_template('changepasswordnotforgot.html', title='Change Password',
+                                   form=form, user=current_user,
+                                   message="Incorrect password",
+                                   params='Account settings', css_file=url_for('static', filename='css/style.css'),
+                                   )
+        return redirect('/new_password')
+
+    return render_template('changepasswordnotforgot.html', title='Change Password',
+                           user=current_user, url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings', form=form
+                           )
+
+
+@app.route('/new_password', methods=['GET', 'POST'])
+@login_required
+def new_password():
+    db_sess = db_session.create_session()
+
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('newpassword.html', title='Change password',
+                                   form=form, user=current_user, css_file=url_for('static', filename='css/style.css'),
+                                   message="Password mismatch",
+                                   params='Account settings'
+                                   )
+        db_sess = db_session.create_session()
+        current_user.set_password(form.password.data)
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return render_template('newpassword.html', title='Change Password',
+                               form=form, user=current_user,  css_file=url_for('static', filename='css/style.css'),
+                               message="The password was changed successfully",
+                               params='Account settings'
+                               )
+
+    return render_template('newpassword.html', title='', user=current_user,
+                           url_for=url_for, form=form,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
                            )
 
 
