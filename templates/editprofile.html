@@ -1,6 +1,31 @@
 {% extends "base_logged_in.html" %}
 
 {% block content %}
-<p>тут будет редактирование/настройки мэйби</p>
-<a class="btn btn-success" href="/account/{{ current_user.username }}">Save</a>
+<br>
+<a href="/account/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
+<h1 align="center"><font face="fantasy">Edit Profile</font></h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(class="form-control") }}<br>
+        {% for error in form.username.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.about.label }}<br>
+        {{ form.about(class="form-control") }}<br>
+        {% for error in form.about.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <div class="move"><br>
+    <p>{{ form.submit(type="submit", class="btn btn-secondary") }}</p></div>
+    {{ message }}
+</form>
 {% endblock %}

@@ -5,17 +5,39 @@
     <img src="{{ userimg }}" class="round">
     <h3>{{ user.username }}</h3>
     {% if user == current_user %}
-        <a href="/editprofile" class="btn btn-success">Edit profile</a>
+        <a href="/editprofile" class="">Edit profile</a>
         <a href="/account_settings/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/settings.png') }}" width="25px"></a>
     {% else %}
-        {% if str(user.id) not in current_user.following.split() %}
-            <a href="/subscribe/{{ user.username }}" class="btn btn-success">Subscribe to</a>
+        {% if not str(current_user.id) in user.blacklist.split(', ') %}
+            {% if str(user.id) not in current_user.following.split() %}
+                <a href="/subscribe/{{ user.username }}" class="btn btn-success">Subscribe to</a>
+            {% else %}
+                <a href="/unsubscribe/{{ user.username }}" class="btn btn-success">Unsubscribe</a>
+            {% endif %}
+        {% endif %}
+        {% if not str(user.id) in current_user.blacklist.split(', ') %}
+            <a href="/add_to_blacklist/{{ user.username }}">Add to blacklist</a>
         {% else %}
-            <a href="/unsubscribe/{{ user.username }}" class="btn btn-success">Unsubscribe</a>
+            <a href="/delete_from_blacklist/{{ user.username }}">Delete from blacklist</a>
         {% endif %}
     {% endif %}
     <p>{{ user.about_me }}</p>
-    <a href="/followers/{{ user.username }}"> {{ user.followers.split(', ') |length - 1}} followers</a>
-    <a href="/following/{{ user.username }}"> {{ user.following.split(', ') |length - 1}} following</a>
+    {% if user != current_user and ((str(user.id) not in current_user.following.split() and user.restrict == True) or (str(current_user.id) in user.blacklist.split(', '))) %}
+        <p> {{ user.followers.split(', ') |length - 1}} followers   {{ user.following.split(', ') |length - 1}} following</p>
+    {% else %}
+        <a href="/followers/{{ user.username }}"> {{ user.followers.split(', ') |length - 1}} followers</a>
+        <a href="/following/{{ user.username }}"> {{ user.following.split(', ') |length - 1}} following</a>
+    {% endif %}
 </div><hr>
+<div class="user_records">
+    {% if user != current_user and str(user.id) not in current_user.following.split() and user.restrict == True %}
+        <p>This user decided to restrict access to his page. Subscribe to view.</p>
+    {% else %}
+        {% if user != current_user and str(current_user.id) in user.blacklist.split(', ') %}
+            <p>This user has added you to the blacklist.</p>
+        {% else %}
+            <p>все ок</p>
+        {% endif %}
+    {% endif %}
+</div>
 {% endblock %}

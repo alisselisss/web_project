@@ -1,7 +1,7 @@
 {% extends "base_logged_in.html" %}
 
 {% block content %}
-<a href="/account/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
+<a href="/account_settings/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
 <div class="block">
     <div class="params">
         <table>
@@ -18,11 +18,20 @@
     <div class="information">
         <table class="table_information">
             <tr><td><h2 class="">{{ params }}</h2></td></tr>
-            <tr><td><img src="{{ url_for('static', filename='img/black_list_icon.jpg') }}" class="icon"><a href="/blacklist">Black list</a>
-                    <p>Users who will not be able to subscribe to your account and view your records and data.</p>
-            </td></tr>
-            <tr><td><img src="{{ url_for('static', filename='img/restrict_icon.png') }}" class="icon"><a href="/restrict_access">Restrict access to my records</a>
-                    <p>Only your subscribers, authorized users will be able to view your posts.</p>
+            <tr><td>
+                <form action="" method="post">
+                    {{ form.hidden_tag() }}
+                    <h3>Change Date Of Birthday</h3>
+                    <select name="country" width="300px">
+                        {% for o in form.list_of_countries %}
+                            <option class='opt' value="{{ o }}">{{ o }}</option>
+                        {% endfor %}
+                    </select><p></p>
+                    <div class="move">
+                            <p>{{ form.submit(type="submit", class="btn btn-secondary") }}</p>
+                    </div>
+                </form>
+                {{ message }}
             </td></tr>
         </table>
     </div>

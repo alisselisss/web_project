@@ -15,12 +15,17 @@ from flask_migrate import Migrate, MigrateCommand
 from data.users import User
 from data import db_session
 from forms.AboutMeForm import AboutMeForm
+from forms.ChangeCountryForm import ChangeCountryForm
+from forms.ChangeDateOfBirthdayForm import ChangeDateOfBirthdayForm
 from forms.ChangePasswordForm import ChangePasswordForm
 from forms.ChangePasswordOldPasswordForm import ChangePasswordOldPasswordForm
+from forms.ChangeUsernameForm import ChangeUsernameForm
+from forms.EditProfileForm import EditProfileForm
 from forms.ForgotForm import ForgotForm
 from forms.LoginForm import LoginForm
 from forms.RegisterForm import RegisterForm
 from forms.Register2Form import Register2Form
+from forms.RestrictAccessForm import RestrictAccessForm
 from forms.UploadPhotoForm import UploadPhotoForm
 from forms.VerificationForm import VerificationForm
 
@@ -226,7 +231,27 @@ def about_me():
 @app.route('/editprofile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    return render_template('editprofile.html', title='Register Form')
+    form = EditProfileForm()
+    if request.method == "GET":
+        form.username.data = current_user.username
+        form.about.data = current_user.about_me
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.username == form.username.data).first()
+        if user and user != current_user:
+            return render_template('editprofile.html', title='EditProfile',
+                                   form=form, css_file=url_for('static', filename='css/style.css'),
+                                   message="This name is already exists"
+                                   )
+
+        current_user.username = form.username.data
+        current_user.about_me = form.about.data
+
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return redirect('/account/' + current_user.username)
+    return render_template('editprofile.html', title='Edit Profile',
+                           form=form, css_file=url_for('static', filename='css/style.css'))
 
 
 @app.route('/account/<username>', methods=['GET', 'POST'])
@@ -395,7 +420,7 @@ def new_password():
         db_sess.merge(current_user)
         db_sess.commit()
         return render_template('newpassword.html', title='Change Password',
-                               form=form, user=current_user,  css_file=url_for('static', filename='css/style.css'),
+                               form=form, user=current_user, css_file=url_for('static', filename='css/style.css'),
                                message="The password was changed successfully",
                                params='Account settings'
                                )
@@ -405,6 +430,150 @@ def new_password():
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
+
+
+@app.route('/account_information/<username>', methods=['GET', 'POST'])
+@login_required
+def account_information(username):
+    return render_template('accountinformation.html', title='',
+                           url_for=url_for,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/change_username', methods=['GET', 'POST'])
+@login_required
+def change_username():
+    form = ChangeUsernameForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        if db_sess.query(User).filter(User.username == form.username.data).first():
+            return render_template('changeusername.html', title='Change Username',
+                                   form=form, css_file=url_for('static', filename='css/style.css'),
+                                   message="This name is already exists",
+                                   params='Account settings'
+                                   )
+        else:
+            current_user.username = form.username.data
+            db_sess.merge(current_user)
+            db_sess.commit()
+            return render_template('changeusername.html', title='Change Username',
+                                   form=form, css_file=url_for('static', filename='css/style.css'),
+                                   message="The username was changed successfully",
+                                   params='Account settings'
+                                   )
+
+    return render_template('changeusername.html', title='Change Username',
+                           url_for=url_for, form=form,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/change_date_of_birthday', methods=['GET', 'POST'])
+@login_required
+def change_date_of_birthday():
+    form = ChangeDateOfBirthdayForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        current_user.year_of_birth = form.year.data
+        current_user.month_of_birth = form.month.data
+        current_user.day_of_birth = form.day.data
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return render_template('changedateofbirthday.html', title='Change date of birthday',
+                               form=form, css_file=url_for('static', filename='css/style.css'),
+                               message="The date of birthday was changed successfully",
+                               params='Account settings'
+                               )
+
+    return render_template('changedateofbirthday.html', title='Change date of birthday',
+                           url_for=url_for, form=form,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/change_country', methods=['GET', 'POST'])
+@login_required
+def change_country():
+    form = ChangeCountryForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        current_user.country = form.country.data
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return render_template('changecountry.html', title='Change Country',
+                               form=form, css_file=url_for('static', filename='css/style.css'),
+                               message="The country was changed successfully",
+                               params='Account settings'
+                               )
+
+    return render_template('changecountry.html', title='Change Country',
+                           url_for=url_for, form=form,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
+@app.route('/restrict_access', methods=['GET', 'POST'])
+@login_required
+def restrict_access():
+    form = RestrictAccessForm()
+    if request.method == 'POST' and form.validate():
+        db_sess = db_session.create_session()
+        current_user.restrict = form.restrict.data
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return render_template('restrictaccess.html', title='Restrict',
+                               form=form, css_file=url_for('static', filename='css/style.css'),
+                               message="Access is open" if not current_user.restrict else "Access limited",
+                               params='Privacy and security'
+                               )
+
+    return render_template('restrictaccess.html', title='Restrict',
+                           url_for=url_for, form=form,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Privacy and security'
+                           )
+
+
+@app.route('/blacklist', methods=['GET', 'POST'])
+@login_required
+def blacklist():
+    db_sess = db_session.create_session()
+    return render_template('blacklist.html', title='Blacklist',
+                           url_for=url_for, user_class=User,
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Privacy and security', str=str, db_sess_query_user=db_sess.query(User)
+                           )
+
+
+@app.route('/delete_from_blacklist/<username>', methods=['GET', 'POST'])
+@login_required
+def delete_from_blacklist(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    blacklist = current_user.blacklist.split(', ')
+    blacklist.remove(str(user.id))
+    current_user.blacklist = ', '.join(blacklist)
+    db_sess.merge(current_user)
+    db_sess.commit()
+    return redirect(f'/blacklist')
+
+
+@app.route('/add_to_blacklist/<username>', methods=['GET', 'POST'])
+@login_required
+def add_to_blacklist(username):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.username == username).first()
+    current_user.blacklist = ', '.join(current_user.blacklist.split(', ') + [str(user.id)])
+    db_sess.merge(current_user)
+    db_sess.commit()
+    if not str(user.id) in current_user.following.split():
+        return redirect(f'/account/{user.username}')
+    return redirect(f'/unsubscribe/{user.username}')
 
 
 if __name__ == '__main__':

@@ -19,23 +19,29 @@
         <table class="table_information">
             <tr><td><h2 class="">{{ params }}</h2></td></tr>
             <tr><td>
-                <h3>Enter your old password</h3>
                 <form action="" method="post">
                     {{ form.hidden_tag() }}
-                    <p>
-                        {{ form.password.label }}<br>
-                        {{ form.password(class="form-control", type="password") }}<br>
-                        {% for error in form.password.errors %}
-                            <p class="alert alert-danger" role="alert">
-                                {{ error }}
-                            </p>
-                        {% endfor %}
-                    </p>
+                    <h3>Change Date Of Birthday</h3>
+                    <p><select name="month" width="300px">
+                    {% for o in form.list_of_months %}
+                        <option class='opt' value="{{ o }}">{{ o }}</option>
+                    {% endfor %}
+                    </select>
+                    <select name="day" width="300px">
+                    {% for o in form.list_of_days %}
+                        <option class='opt' value="{{ o }}">{{ o }}</option>
+                    {% endfor %}
+                    </select>
+                    <select name="year" width="300px">
+                    {% for o in form.list_of_years %}
+                        <option class='opt' value="{{ o }}">{{ o }}</option>
+                    {% endfor %}
+                    </select></p>
                     <div class="move">
-                    <p>
-                        {{ form.submit(type="submit", class="btn btn-secondary") }}</p></div>
+                        <p>{{ form.submit(type="submit", class="btn btn-secondary") }}</p>
+                    </div>
                     {{ message }}
-                </form>
+                    </form>
             </td></tr>
         </table>
     </div>

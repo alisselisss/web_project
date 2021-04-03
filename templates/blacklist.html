@@ -1,0 +1,39 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<a href="/privacy_and_security/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
+<div class="block">
+    <div class="params">
+        <table>
+        <tr><td><h2 class="">Settings</h2></td></tr>
+        {% if params == 'Account settings' %}
+            <tr><td class="selected"><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
+            <tr><td><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+        {% else %}
+            <tr><td><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
+            <tr><td class="selected"><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+        {% endif %}
+        </table>
+    </div>
+    <div class="information">
+        <table class="table_information">
+            <tr><td><h2 class="">{{ params }}</h2></td></tr>
+            <tr><td><h3>Black list</h3>
+                <p>If you add a user to the blacklist, then he will not be able to view your records, data and subscribe to your account</p></td></tr>
+                {% if current_user.blacklist.split(', ') |length != 1 %}
+                    {% for id in current_user.blacklist.split(', ') %}
+                    {% set banned_user = db_sess_query_user.filter(user_class.id == id).first() %}
+                        {% if banned_user %}
+                            <tr><td><img src="{{ url_for('static', filename='img/' + banned_user.photo) }}" class="round">
+                                <a href="/delete_from_blacklist/{{ banned_user.username }}"><img src="{{ url_for('static', filename='img/cancel_icon.png') }}" class="icon attheight"></a>
+                            <a href="/account/{{ banned_user.username }}">{{ banned_user.username }}</a>
+                            <p>{{ banned_user.about_me}}</p></td></tr>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <tr><td><p>You have not added any users to the blacklist.</p></td></tr>
+                {% endif %}
+        </table>
+    </div>
+</div>
+{% endblock %}

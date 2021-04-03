@@ -18,7 +18,7 @@
     <div class="information">
         <table class="table_information">
             <tr><td><h2 class="">{{ params }}</h2></td></tr>
-            <tr><td><img src="{{ url_for('static', filename='img/user_icon.png') }}" class="icon"><a href="">Account information</a>
+            <tr><td><img src="{{ url_for('static', filename='img/user_icon.png') }}" class="icon"><a href="/account_information/{{ current_user.username }}">Account information</a>
                     <p>View your account details.</p>
             </td></tr>
             <tr><td><img src="{{ url_for('static', filename='img/change_password_icon.png') }}" class="icon"><a href="/change_old_password">Сhange password</a>
