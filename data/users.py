@@ -23,6 +23,8 @@ class User(SqlAlchemyBase, UserMixin):
     about_me = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True)
     followers = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     following = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    restrict = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
+    blacklist = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
