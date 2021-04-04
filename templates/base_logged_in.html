@@ -7,7 +7,11 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="http://rawgithub.com/indrimuska/jquery-editable-select/master/dist/jquery-editable-select.min.js"></script>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link href="http://rawgithub.com/indrimuska/jquery-editable-select/master/dist/jquery-editable-select.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href={{ css_file }}>
     <title>{{ title }}</title>
 </head>
@@ -18,11 +22,34 @@
                 <img src="static/img/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
                 StarTwi
             </a>
-            <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-secondary" type="submit">Search</button>
+            <a href="/account/{{ current_user.username }}" style="text-decoration: none" class="navbar-brand">
+                <img src="{{ url_for('static', filename='img/' + current_user.photo) }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px;">
+                {{ current_user.username }}</a>
+            <form class="d-flex" method="post" id="sample_form" name="sample_form">
+                <button class="btn btn-outline-secondary" type="submit" name="Save" id="save">Search</button>
+                <select name="users" id="users" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                    {% for found_user in userlist %}
+                        {% if found_user %}
+                            <option>{{ found_user.username }}</option>
+                        {% endif %}
+                    {% endfor %}
+               </select>
+          <script>
+            $(document).ready(function(){
+                $('#users').editableSelect();
+
+                $('#sample_form').on('submit', function(event){
+                    event.preventDefault();
+                    if($('#users').val() == ''){
+                       return false;
+                    }else{
+                        window.location.pathname = '/account/' + $('#users').val();
+                    }
+                });
+            });
+          </script>
       </form>
-        </nav>
+    </nav>
     </header>
     <main role="main" class="container">
         {% block content %}{% endblock %}

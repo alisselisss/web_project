@@ -250,8 +250,18 @@ def edit_profile():
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/account/' + current_user.username)
-    return render_template('editprofile.html', title='Edit Profile',
+    return render_template('editprofile.html', title='Edit Profile', userlist=get_userlist(),
                            form=form, css_file=url_for('static', filename='css/style.css'))
+
+
+def get_userlist():
+    return sorted(db_session.create_session().query(User).filter(User.username != current_user.username),
+                  key=lambda x: [0 if str(x.id) in current_user.following.split(', ') else 1,
+                                 - len(list(set(current_user.following.split(', ')) & set(
+                                     x.following.split(', ')))),
+                                 - len(list(set(current_user.followers.split(', ')) & set(
+                                     x.followers.split(', ')))),
+                                 x.username])
 
 
 @app.route('/account/<username>', methods=['GET', 'POST'])
@@ -261,9 +271,10 @@ def account(username):
     user = db_sess.query(User).filter(User.username == username).first()
     if not user:
         abort(404)
-    return render_template('account.html', title='', user=user,
+    return render_template('account.html', title='', user=user, url_for=url_for,
                            userimg=url_for('static', filename='img/' + user.photo),
                            css_file=url_for('static', filename='css/style.css'),
+                           userlist=get_userlist(),
                            str=str)
 
 
@@ -305,7 +316,7 @@ def following(username):
     if not user:
         abort(404)
     return render_template('following.html', title='', user=user,
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            str=str, db_sess_query_user=db_sess.query(User), user_class=User)
 
@@ -318,7 +329,7 @@ def followers(username):
     if not user:
         abort(404)
     return render_template('followers.html', title='', user=user,
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            str=str, db_sess_query_user=db_sess.query(User), user_class=User)
 
@@ -327,7 +338,7 @@ def followers(username):
 @login_required
 def account_settings(username):
     return render_template('accountsettings.html', title='', user=current_user,
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -338,7 +349,7 @@ def account_settings(username):
 def delete_account(username):
     db_sess = db_session.create_session()
     return render_template('deleteaccount.html', title='', user=current_user,
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -374,7 +385,7 @@ def delete(username):
 @login_required
 def privacy_and_security(username):
     return render_template('privacyandsecurity.html', title='', user=current_user,
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Privacy and security'
                            )
@@ -389,14 +400,14 @@ def change_old_password():
     if form.validate_on_submit():
         if not current_user.check_password(form.password.data):
             return render_template('changepasswordnotforgot.html', title='Change Password',
-                                   form=form, user=current_user,
+                                   form=form, user=current_user, userlist=get_userlist(),
                                    message="Incorrect password",
                                    params='Account settings', css_file=url_for('static', filename='css/style.css'),
                                    )
         return redirect('/new_password')
 
     return render_template('changepasswordnotforgot.html', title='Change Password',
-                           user=current_user, url_for=url_for,
+                           user=current_user, url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings', form=form
                            )
@@ -411,6 +422,7 @@ def new_password():
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('newpassword.html', title='Change password',
+                                   userlist=get_userlist(),
                                    form=form, user=current_user, css_file=url_for('static', filename='css/style.css'),
                                    message="Password mismatch",
                                    params='Account settings'
@@ -420,13 +432,14 @@ def new_password():
         db_sess.merge(current_user)
         db_sess.commit()
         return render_template('newpassword.html', title='Change Password',
+                               userlist=get_userlist(),
                                form=form, user=current_user, css_file=url_for('static', filename='css/style.css'),
                                message="The password was changed successfully",
                                params='Account settings'
                                )
 
     return render_template('newpassword.html', title='', user=current_user,
-                           url_for=url_for, form=form,
+                           url_for=url_for, form=form, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -436,7 +449,7 @@ def new_password():
 @login_required
 def account_information(username):
     return render_template('accountinformation.html', title='',
-                           url_for=url_for,
+                           url_for=url_for, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -450,6 +463,7 @@ def change_username():
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.username == form.username.data).first():
             return render_template('changeusername.html', title='Change Username',
+                                   userlist=get_userlist(),
                                    form=form, css_file=url_for('static', filename='css/style.css'),
                                    message="This name is already exists",
                                    params='Account settings'
@@ -459,13 +473,14 @@ def change_username():
             db_sess.merge(current_user)
             db_sess.commit()
             return render_template('changeusername.html', title='Change Username',
+                                   userlist=get_userlist(),
                                    form=form, css_file=url_for('static', filename='css/style.css'),
                                    message="The username was changed successfully",
                                    params='Account settings'
                                    )
 
     return render_template('changeusername.html', title='Change Username',
-                           url_for=url_for, form=form,
+                           url_for=url_for, form=form, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -485,11 +500,11 @@ def change_date_of_birthday():
         return render_template('changedateofbirthday.html', title='Change date of birthday',
                                form=form, css_file=url_for('static', filename='css/style.css'),
                                message="The date of birthday was changed successfully",
-                               params='Account settings'
+                               params='Account settings', userlist=get_userlist()
                                )
 
     return render_template('changedateofbirthday.html', title='Change date of birthday',
-                           url_for=url_for, form=form,
+                           url_for=url_for, form=form, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -505,13 +520,14 @@ def change_country():
         db_sess.merge(current_user)
         db_sess.commit()
         return render_template('changecountry.html', title='Change Country',
+                               userlist=get_userlist(),
                                form=form, css_file=url_for('static', filename='css/style.css'),
                                message="The country was changed successfully",
                                params='Account settings'
                                )
 
     return render_template('changecountry.html', title='Change Country',
-                           url_for=url_for, form=form,
+                           url_for=url_for, form=form, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Account settings'
                            )
@@ -527,13 +543,14 @@ def restrict_access():
         db_sess.merge(current_user)
         db_sess.commit()
         return render_template('restrictaccess.html', title='Restrict',
+                               userlist=get_userlist(),
                                form=form, css_file=url_for('static', filename='css/style.css'),
                                message="Access is open" if not current_user.restrict else "Access limited",
                                params='Privacy and security'
                                )
 
     return render_template('restrictaccess.html', title='Restrict',
-                           url_for=url_for, form=form,
+                           url_for=url_for, form=form, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Privacy and security'
                            )
@@ -544,7 +561,7 @@ def restrict_access():
 def blacklist():
     db_sess = db_session.create_session()
     return render_template('blacklist.html', title='Blacklist',
-                           url_for=url_for, user_class=User,
+                           url_for=url_for, user_class=User, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            params='Privacy and security', str=str, db_sess_query_user=db_sess.query(User)
                            )
