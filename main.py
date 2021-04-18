@@ -13,6 +13,7 @@ from flask_mail import Mail, Message
 from flask_migrate import Migrate, MigrateCommand
 
 from data.users import User
+from data.messages import Messages
 from data import db_session
 from forms.AboutMeForm import AboutMeForm
 from forms.ChangeCountryForm import ChangeCountryForm
@@ -22,6 +23,7 @@ from forms.ChangePasswordOldPasswordForm import ChangePasswordOldPasswordForm
 from forms.ChangeUsernameForm import ChangeUsernameForm
 from forms.EditProfileForm import EditProfileForm
 from forms.ForgotForm import ForgotForm
+from forms.MessageForm import MessageForm
 from forms.LoginForm import LoginForm
 from forms.RegisterForm import RegisterForm
 from forms.Register2Form import Register2Form
@@ -148,9 +150,7 @@ def reqister():
             month_of_birth=form.month.data,
             day_of_birth=form.day.data,
             year_of_birth=form.year.data,
-            country=form.country.data,
-            followers=' ',
-            following=' '
+            country=form.country.data
         )
         back = '/register'
         return redirect('/send_verification')
@@ -252,16 +252,6 @@ def edit_profile():
         return redirect('/account/' + current_user.username)
     return render_template('editprofile.html', title='Edit Profile', userlist=get_userlist(),
                            form=form, css_file=url_for('static', filename='css/style.css'))
-
-
-def get_userlist():
-    return sorted(db_session.create_session().query(User).filter(User.username != current_user.username),
-                  key=lambda x: [0 if str(x.id) in current_user.following.split(', ') else 1,
-                                 - len(list(set(current_user.following.split(', ')) & set(
-                                     x.following.split(', ')))),
-                                 - len(list(set(current_user.followers.split(', ')) & set(
-                                     x.followers.split(', ')))),
-                                 x.username])
 
 
 @app.route('/account/<username>', methods=['GET', 'POST'])
@@ -445,7 +435,26 @@ def new_password():
                            )
 
 
+def get_userlist():
+    return sorted(db_session.create_session().query(User).filter(User.username != current_user.username),
+                  key=lambda x: [0 if str(x.id) in current_user.following.split(', ') else 1,
+                                 - len(list(set(current_user.following.split(', ')) & set(
+                                     x.following.split(', ')))),
+                                 - len(list(set(current_user.followers.split(', ')) & set(
+                                     x.followers.split(', ')))),
+                                 x.username])
+
+
 @app.route('/account_information/<username>', methods=['GET', 'POST'])
+@login_required
+def account_information(username):
+    return render_template('accountinformation.html', title='',
+                           url_for=url_for, userlist=get_userlist(),
+                           css_file=url_for('static', filename='css/style.css'),
+                           params='Account settings'
+                           )
+
+
 @login_required
 def account_information(username):
     return render_template('accountinformation.html', title='',
@@ -588,9 +597,79 @@ def add_to_blacklist(username):
     current_user.blacklist = ', '.join(current_user.blacklist.split(', ') + [str(user.id)])
     db_sess.merge(current_user)
     db_sess.commit()
-    if not str(user.id) in current_user.following.split():
+    if not str(user.id) in current_user.following.split(', '):
         return redirect(f'/account/{user.username}')
     return redirect(f'/unsubscribe/{user.username}')
+
+
+@app.route('/messenger/<username>', methods=['GET', 'POST'])
+@login_required
+def messenger(username):
+    db_sess = db_session.create_session()
+    form = MessageForm()
+    user = db_sess.query(User).filter(User.username == username).first()
+
+    if form.validate_on_submit():
+        add_message(current_user.id, user.id, form.message.data)
+        return redirect(f'/messenger/{username}')
+
+    return render_template('messenger.html', title='Messenger', form=form, user=user,
+                           url_for=url_for, user_class=User, userlist=get_userlist(),
+                           css_file=url_for('static', filename='css/style.css'),
+                           messages_list=db_sess.query(Messages).filter(((Messages.from_id == current_user.id) / (Messages.to_id == user.id)) |
+                                                                        ((Messages.to_id == current_user.id) / (Messages.from_id == user.id))).all(),
+                           str=str, db_sess_query_user=db_sess.query(User)
+                           )
+
+
+def add_message(from_id, to_id, message_text):
+    db_sess = db_session.create_session()
+    message = Messages(
+        from_id=from_id,
+        to_id=to_id,
+        message_text=message_text,
+    )
+    db_sess.add(message)
+    db_sess.commit()
+
+
+@app.route('/delete_message/<message_id>', methods=['GET', 'POST'])
+@login_required
+def delete_message(message_id):
+    db_sess = db_session.create_session()
+    message = db_sess.query(Messages).filter(Messages.id == int(message_id)).first()
+    user = db_sess.query(User).filter(User.id == message.to_id).first()
+    db_sess.delete(message)
+    db_sess.commit()
+    return redirect(f'/messenger/{user.username}')
+
+
+@app.route('/chats', methods=['GET', 'POST'])
+@login_required
+def chats():
+    db_sess = db_session.create_session()
+    interlocutor_id = db_sess.query(Messages).filter((Messages.from_id == current_user.id) | (Messages.to_id == current_user.id))
+    interlocutor_users = [db_sess.query(User).filter((User.id == message.from_id) | (User.id == message.to_id)).first() for message in interlocutor_id][::-1]
+    interlocutor_users = [user for user in interlocutor_users if user.id != current_user.id]
+    i = 0
+    while len(interlocutor_users) != len(set(interlocutor_users)):
+        if interlocutor_users.index(interlocutor_users[i]) != i:
+            interlocutor_users.remove(interlocutor_users[i])
+        else:
+            i += 1
+    interlocutor_last_messages = []
+    for user in interlocutor_users:
+        messages = db_sess.query(Messages).filter(((Messages.from_id == user.id) / (Messages.to_id == current_user.id)) |
+                                                                         ((Messages.to_id == user.id) / (Messages.from_id == current_user.id))).all()
+        if messages:
+            interlocutor_last_messages.append(messages[::-1][0])
+
+    return render_template('chats.html', title='Messenger',
+                           url_for=url_for, user_class=User, userlist=get_userlist(),
+                           css_file=url_for('static', filename='css/style.css'),
+                           chat_list=interlocutor_users, interlocutor_last_messages=interlocutor_last_messages,
+                           str=str, db_sess_query_user=db_sess.query(User)
+                           )
 
 
 if __name__ == '__main__':
