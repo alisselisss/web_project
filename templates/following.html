@@ -1,7 +1,7 @@
 {% extends "base_logged_in.html" %}
 
 {% block content %}
-<a href="/account/{{ current_user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
+<a href="/account/{{ user.username }}" class="settingsback"><img src="{{ url_for('static', filename='img/back.png') }}" width="33px"></a>
 <div class="following_list" style="margin: 50px;">
     <p>
         <h1>Subscriptions</h1>

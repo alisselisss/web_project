@@ -1,0 +1,60 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<div class="messenger">
+    <table class="message-table">
+        <tr><td style="background-color: #f0f6f7; " class="about-chat"><div>
+            <a href="/chats"><img src="{{ url_for('static', filename='img/back.png') }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px;"></a>
+            <a href="/account/{{ user.username }}" style="text-decoration: none" class="navbar-brand">
+                <img src="{{ url_for('static', filename='img/' + user.photo) }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px;">
+                {{ user.username }}</a>
+        </div></td></tr>
+        <tr><td class="all-messages-box" id="all-messages-box">
+            {% if messages_list %}
+                {% for message in messages_list %}
+                    {% if messages_list.index(message) == 0 or messages_list[messages_list.index(message) - 1].from_id != message.from_id %}
+                        <div class="message">
+                            {% set sender = db_sess_query_user.filter(user_class.id == message.from_id).first() %}
+                            <img src="{{ url_for('static', filename='img/' + sender.photo) }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px; margin-top:3%;">
+                            <div style="margin-left: 50px; color: #454545;">
+                                 <a href="/account/{{ sender.username }}" style="text-decoration: none; padding-top: 3%;">{{ sender.username }} {{ message.sending_time.hour }}:{{ str(message.sending_time.minute) if (str(message.sending_time.minute)) | length == 2 else '0' + str(message.sending_time.minute) }}</a><br>
+                                {% if message.from_id == current_user.id %}
+                                    <a href="/delete_message/{{ message.id }}"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5%"></a>
+                                {% endif%}
+                                {{ message.message_text }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="margin-left: 50px; color: #454545;"><br>
+                            {% if message.from_id == current_user.id %}
+                                <a href="/delete_message/{{ message.id }}"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5%"></a>
+                            {% else %}
+                            {% endif %}
+                            {{ message.message_text }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p align="center" style="margin-top: 50%; color: #a3a29e;">no messages yet</p>
+            {% endif %}
+        </td></tr>
+        <script type="text/javascript">
+            var block = document.getElementById("all-messages-box");
+            block.scrollTop = block.scrollHeight;
+        </script>
+        <tr><td style="background-color: #f0f6f7;" class="send-message"><div class="form-send-message">
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                    <div style="float: left; width: 100%;">{{ form.message.label }}<br>
+                        <span style="float:left; width:80%">{{ form.message(class="form-control") }}</span><span style="float:right; width:20%">{{ form.send(type="submit", class="btn btn-secondary") }}</span><br>
+                    {% for error in form.message.errors %}
+                        <p class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </p>
+                        {% endfor %}
+                    </div>
+            </form>
+        </div></td></tr>
+    </table>
+</div>
+{% endblock %}

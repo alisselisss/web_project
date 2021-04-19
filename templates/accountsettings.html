@@ -7,11 +7,11 @@
         <table>
         <tr><td><h2 class="">Settings</h2></td></tr>
         {% if params == 'Account settings' %}
-            <tr><td class="selected"><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
-            <tr><td><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+            <tr><td class="selected"><a href="/account_settings/{{ current_user.username }}" style="text-decoration: none;">My account</a></td></tr>
+            <tr><td><a href="/privacy_and_security/{{ current_user.username }}" style="text-decoration: none;">Privacy and security</a></td></tr>
         {% else %}
-            <tr><td><a href="/account_settings/{{ current_user.username }}">My account</a></td></tr>
-            <tr><td class="selected"><a href="/privacy_and_security/{{ current_user.username }}">Privacy and security</a></td></tr>
+            <tr><td><a href="/account_settings/{{ current_user.username }}" style="text-decoration: none;">My account</a></td></tr>
+            <tr><td class="selected"><a href="/privacy_and_security/{{ current_user.username }}" style="text-decoration: none;">Privacy and security</a></td></tr>
         {% endif %}
         </table>
     </div>

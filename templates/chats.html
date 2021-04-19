@@ -1,0 +1,41 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+<div class="block">
+    <div class="chats_box">
+        <h2>Messenger</h2>
+        <table class="chats">
+            {% for user in chat_list %}
+                <tr width="40%"><td><img src="{{ url_for('static', filename='img/' + user.photo) }}" alt="" width="50" class="icon" style="margin: 0px; margin-right: 10px;"><a href="/messenger/{{ user.username }}" style="text-decoration: none;">{{ user.username }}<br>
+                    {% if interlocutor_last_messages[chat_list.index(user)].from_id == current_user.id %}
+                        <img src="{{ url_for('static', filename='img/' + current_user.photo) }}" class="icon" style="margin: 0px; margin-right: 10px; margin-top:0%; width:20px; height: 20px;">
+                        {% set message = interlocutor_last_messages[chat_list.index(user)] %}
+                        <p>{{ message.message_text }}
+                            <span style="float:right; margin-right:10px;">
+                            {% if message.sending_time.day == datetime.today().day and message.sending_time.month == datetime.today().month and message.sending_time.year == datetime.today().year %}
+                                {{ message.sending_time.hour }}:{{ str(message.sending_time.minute) if (str(message.sending_time.minute)) | length == 2 else '0' + str(message.sending_time.minute)}}
+                            {% else %}
+                                {% set month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] %}
+                                {{ message.sending_time.day }} {{ month[message.sending_time.month - 1] }}
+                            {% endif %}
+                            </span>
+                        </p></a>
+                    {% else %}
+                        {% set message = interlocutor_last_messages[chat_list.index(user)] %}
+                        <p>{{ message.message_text }}
+                            <span style="float:right; margin-right:10px;">
+                            {% if message.sending_time.day == datetime.today().day and message.sending_time.month == datetime.today().month and message.sending_time.year == datetime.today().year %}
+                                {{ message.sending_time.hour }}:{{ str(message.sending_time.minute) if (str(message.sending_time.minute)) | length == 2 else '0' + str(message.sending_time.minute)}}
+                            {% else %}
+                                {% set month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] %}
+                                {{ message.sending_time.day }} {{ month[message.sending_time.month - 1] }}
+                            {% endif %}
+                            </span>
+                        </p></a>
+                    {% endif %}
+                </td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

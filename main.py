@@ -1,5 +1,6 @@
 import os
 import random
+from datetime import datetime
 
 from flask_migrate import Migrate
 from flask_script import Manager
@@ -649,7 +650,8 @@ def delete_message(message_id):
 def chats():
     db_sess = db_session.create_session()
     interlocutor_id = db_sess.query(Messages).filter((Messages.from_id == current_user.id) | (Messages.to_id == current_user.id))
-    interlocutor_users = [db_sess.query(User).filter((User.id == message.from_id) | (User.id == message.to_id)).first() for message in interlocutor_id][::-1]
+    interlocutor_users = [db_sess.query(User).filter(User.id == message.from_id).first() for message in interlocutor_id] +\
+                         [db_sess.query(User).filter(User.id == message.to_id).first() for message in interlocutor_id]
     interlocutor_users = [user for user in interlocutor_users if user.id != current_user.id]
     i = 0
     while len(interlocutor_users) != len(set(interlocutor_users)):
@@ -657,18 +659,18 @@ def chats():
             interlocutor_users.remove(interlocutor_users[i])
         else:
             i += 1
+    interlocutor_users.sort(key=lambda x: list(map(lambda x: x.from_id if x.from_id != current_user.id else x.to_id, interlocutor_id))[::-1].index(x.id))
     interlocutor_last_messages = []
     for user in interlocutor_users:
         messages = db_sess.query(Messages).filter(((Messages.from_id == user.id) / (Messages.to_id == current_user.id)) |
                                                                          ((Messages.to_id == user.id) / (Messages.from_id == current_user.id))).all()
         if messages:
             interlocutor_last_messages.append(messages[::-1][0])
-
     return render_template('chats.html', title='Messenger',
                            url_for=url_for, user_class=User, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
                            chat_list=interlocutor_users, interlocutor_last_messages=interlocutor_last_messages,
-                           str=str, db_sess_query_user=db_sess.query(User)
+                           str=str, db_sess_query_user=db_sess.query(User), datetime=datetime
                            )
 
 

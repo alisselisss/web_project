@@ -22,7 +22,7 @@
                 <img src="static/img/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
                 StarTwi
             </a>
-            <a href="/account/{{ current_user.username }}" style="text-decoration: none" class="navbar-brand">
+            <a href="/account/{{ current_user.username }}" style="text-decoration: none;" class="navbar-brand">
                 <img src="{{ url_for('static', filename='img/' + current_user.photo) }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px;">
                 {{ current_user.username }}</a>
             <form class="d-flex" method="post" id="sample_form" name="sample_form">
@@ -52,7 +52,18 @@
     </nav>
     </header>
     <main role="main" class="container">
-        {% block content %}{% endblock %}
+        <div style="float:left;">
+            <ul style="list-style-type: none;">
+                <li><a href="/account/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/home_icon.png') }}" style="width:30px; margin-top:60px;"></a></li>
+                <li><a href="/account/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/news_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
+                <li><a href="/chats"><img src="{{ url_for('static', filename='img/messenger_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
+                <li><a href="/account_settings/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/settings.png') }}" style="width:30px; margin-top:20px;"></a></li>
+                <li><a href="/logout"><img src="{{ url_for('static', filename='img/exit_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
+            </ul>
+        </div>
+        <div style="margin-left: 12%">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 </body>
 </html>
