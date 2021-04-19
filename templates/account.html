@@ -6,41 +6,79 @@
         <img src="{{ userimg }}" class="round">
         <h3>{{ user.username }}</h3>
         {% if user == current_user %}
-            <a href="/editprofile" class="">Edit profile</a>
+            <a href="/editprofile" class="" style="text-decoration: none;">Edit profile</a>
             <a href="/account_settings/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/settings.png') }}" width="25px"></a>
         {% else %}
             {% if not str(current_user.id) in user.blacklist.split(', ') %}
-                {% if str(user.id) not in current_user.following.split() %}
-                    <a href="/subscribe/{{ user.username }}" class="btn btn-success">Subscribe to</a>
+                {% if str(user.id) not in current_user.following.split(', ') %}
+                    <a href="/subscribe/{{ user.username }}" class="btn btn-secondary">Subscribe to</a>
                 {% else %}
-                    <a href="/unsubscribe/{{ user.username }}" class="btn btn-success">Unsubscribe</a>
+                    <a href="/unsubscribe/{{ user.username }}" class="btn btn-secondary">Unsubscribe</a>
                 {% endif %}
             {% endif %}
+            <br>
             {% if not str(user.id) in current_user.blacklist.split(', ') %}
-                <a href="/add_to_blacklist/{{ user.username }}">Add to blacklist</a>
+                <a href="/add_to_blacklist/{{ user.username }}" style="text-decoration: none;" class="brright">Add to blacklist</a>
             {% else %}
-                <a href="/delete_from_blacklist/{{ user.username }}">Delete from blacklist</a>
+                <a href="/delete_from_blacklist/{{ user.username }}" style="text-decoration: none;">Delete from blacklist</a>
             {% endif %}
             {% if (not user.restrict or (user.restrict and str(user.id) in current_user.following.split())) and not str(current_user.id) in user.blacklist.split(', ') %}
-                <a href="/messenger/{{ user.username }}">Send message</a>
+                <a href="/messenger/{{ user.username }}" style="text-decoration: none;">Send message</a>
             {% endif %}
         {% endif %}
         <p>{{ user.about_me }}</p>
-        {% if user != current_user and ((str(user.id) not in current_user.following.split() and user.restrict == True) or (str(current_user.id) in user.blacklist.split(', '))) %}
+        {% if user != current_user and ((str(user.id) not in current_user.following.split(', ') and user.restrict == True) or (str(current_user.id) in user.blacklist.split(', '))) %}
             <p> {{ user.followers.split(', ') |length - 1}} followers   {{ user.following.split(', ') |length - 1}} following</p>
         {% else %}
-            <a href="/followers/{{ user.username }}"> {{ user.followers.split(', ') |length - 1}} followers</a>
-            <a href="/following/{{ user.username }}"> {{ user.following.split(', ') |length - 1}} following</a>
+            <a href="/followers/{{ user.username }}" style="text-decoration: none;" class="brright"> {{ user.followers.split(', ') | length - 1}} followers</a>
+            <a href="/following/{{ user.username }}" style="text-decoration: none;"> {{ user.following.split(', ') | length - 1}} following</a>
         {% endif %}
     </div><hr>
     <div class="user_records">
-        {% if user != current_user and str(user.id) not in current_user.following.split() and user.restrict == True %}
-            <p>This user decided to restrict access to his page. Subscribe to view.</p>
+        {% if user.id == current_user.id %}
+            <form action="/add_news" method="post">
+                <textarea name="text" class="form-control" placeholder="Anything new?"></textarea>
+                <input type="submit" class="btn btn-secondary" style="margin: 7px;" value="Share">
+            </form><hr>
+        {% endif %}
+        {% if user != current_user and str(user.id) not in current_user.following.split(', ') and user.restrict == True %}
+            <div class="news">
+                <p>This user decided to restrict access to his page. Subscribe to view.</p>
+            </div>
         {% else %}
             {% if user != current_user and str(current_user.id) in user.blacklist.split(', ') %}
-                <p>This user has added you to the blacklist.</p>
+                <div class="news">
+                    <p style="color: #828282" align="center">This user has added you to the blacklist.</p>
+                </div>
             {% else %}
-                <p>все ок</p>
+                {% if newslist | length != 0 %}
+                    {% for news in newslist %}
+                        <div class="news">
+                            <a href="/account/{{ user.username }}" style="text-decoration: none;color: #333333">
+                                <img src="{{ url_for('static', filename='img/' + user.photo) }}" class="icon" style="height: 30px; width: 30px;margin: 0px; margin-right: 10px; margin-top:3%;margin-left:10px;">
+                                {{ user.username }}<br>
+                                {% set month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] %}
+                                <span style="font-size:12px;">{{ news.creation_time.day }} {{ month[news.creation_time.month - 1] }} {{ news.creation_time.year }}</span>
+                            </a>
+                            {% if user.id == current_user.id %}
+                                <a href="/delete_news/{{ news.id }}"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5px;"></a>
+                            {% endif %}
+                            <br>
+                            <p>{{ news.news_text }}</p><hr>
+                            {% if str(current_user.id) not in news.likes.split(', ') %}
+                                <a href="/like/{{ news.id }}"><img src="{{ url_for('static', filename='img/no_like.png') }}" style="width: 19px;"></a>
+                            {% else %}
+                                <a href="/like/{{ news.id }}"><img src="{{ url_for('static', filename='img/like.png') }}" style="width: 19px;"></a>
+                            {% endif %}
+                            {{ news.likes.split(', ') | length - 1 }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="news">
+                        <p style="color: #828282" align="center">There are no entries here yet</p>
+                        <img src="{{ url_for('static', filename='img/no_news.png') }}" style="width: 100px;margin-top: 30px;margin-left: 40%;" align="center">
+                    </div>
+                {% endif %}
             {% endif %}
         {% endif %}
     </div>

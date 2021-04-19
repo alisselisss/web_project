@@ -15,6 +15,7 @@ from flask_migrate import Migrate, MigrateCommand
 
 from data.users import User
 from data.messages import Messages
+from data.news import News
 from data import db_session
 from forms.AboutMeForm import AboutMeForm
 from forms.ChangeCountryForm import ChangeCountryForm
@@ -87,7 +88,7 @@ def login():
                                               User.username == form.login.data).first()
             if user and user.check_password(form.password.data):
                 login_user(user, remember=form.remember_me.data)
-                return redirect('/account/' + current_user.username)
+                return redirect('/account/' + user.username)
         except Exception:
             return render_template('login.html',
                                    message="Такого пользоватея не существует",
@@ -225,6 +226,7 @@ def about_me():
         db_sess = db_session.create_session()
         db_sess.add(user)
         db_sess.commit()
+        login_user(user)
         return redirect('/account/' + user.username)
     return render_template('aboutme.html', title='Register Form', form=form)
 
@@ -260,12 +262,13 @@ def edit_profile():
 def account(username):
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.username == username).first()
+    newslist = db_sess.query(News).filter(News.user_id == user.id).all()
     if not user:
         abort(404)
     return render_template('account.html', title='', user=user, url_for=url_for,
                            userimg=url_for('static', filename='img/' + user.photo),
                            css_file=url_for('static', filename='css/style.css'),
-                           userlist=get_userlist(),
+                           userlist=get_userlist(), newslist=newslist[::-1],
                            str=str)
 
 
@@ -672,6 +675,45 @@ def chats():
                            chat_list=interlocutor_users, interlocutor_last_messages=interlocutor_last_messages,
                            str=str, db_sess_query_user=db_sess.query(User), datetime=datetime
                            )
+
+
+@app.route('/like/<news_id>', methods=['GET', 'POST'])
+@login_required
+def like(news_id):
+    db_sess = db_session.create_session()
+    news = db_sess.query(News).filter(News.id == int(news_id)).first()
+    if str(current_user.id) in news.likes.split(', '):
+        news.likes = news.likes.split(', ')
+        news.likes.remove(str(current_user.id))
+        news.likes = ', '.join(news.likes)
+    else:
+        news.likes += ', ' + str(current_user.id)
+    db_sess.merge(news)
+    db_sess.commit()
+    return redirect(f'/account/{db_sess.query(User).filter(User.id == news.user_id).first().username}')
+
+
+@app.route('/add_news', methods=['GET', 'POST'])
+@login_required
+def add_news():
+    db_sess = db_session.create_session()
+    news = News(
+        user_id=current_user.id,
+        news_text=request.form['text']
+    )
+    db_sess.add(news)
+    db_sess.commit()
+    return redirect(f'/account/{current_user.username}')
+
+
+@app.route('/delete_news/<news_id>', methods=['GET', 'POST'])
+@login_required
+def delete_news(news_id):
+    db_sess = db_session.create_session()
+    news = db_sess.query(News).filter(News.id == int(news_id)).first()
+    db_sess.delete(news)
+    db_sess.commit()
+    return redirect(f'/account/{current_user.username}')
 
 
 if __name__ == '__main__':
