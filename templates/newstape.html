@@ -1,0 +1,41 @@
+{% extends "base_logged_in.html" %}
+
+{% block content %}
+    <div class="block">
+        <h2>Newstape</h2><hr>
+        <form action="/add_news/newstape" method="post">
+            <textarea name="text" class="form-control" placeholder="Anything new?"></textarea>
+            <input type="submit" class="btn btn-secondary" style="margin: 7px;" value="Share">
+        </form><hr>
+    {% if newslist | length != 0 %}
+        {% for news in newslist %}
+            {% set user = db_sess_query_user.filter(user_class.id == news.user_id).first() %}
+            <div class="news">
+                <a href="/account/{{ user.username }}" style="text-decoration: none;color: #333333">
+                    <img src="{{ url_for('static', filename='img/' + user.photo) }}" class="icon" style="height: 30px; width: 30px;margin: 0px; margin-right: 10px; margin-top:3%;margin-left:10px;">
+                    {{ user.username }}<br>
+                    {% set month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] %}
+                    <span style="font-size:12px;">{{ news.creation_time.day }} {{ month[news.creation_time.month - 1] }} {{ news.creation_time.year }}</span>
+                </a>
+                {% if user.id == current_user.id %}
+                    <a href="/delete_news/{{ news.id }}/newstape"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5px;"></a>
+                {% endif %}
+                <br>
+                <p>{{ news.news_text }}</p><hr>
+                {% if str(current_user.id) not in news.likes.split(', ') %}
+                    <a href="/like/{{ news.id }}/newstape"><img src="{{ url_for('static', filename='img/no_like.png') }}" style="width: 19px;"></a>
+                {% else %}
+                    <a href="/like/{{ news.id }}/newstape"><img src="{{ url_for('static', filename='img/like.png') }}" style="width: 19px;"></a>
+                {% endif %}
+                {{ news.likes.split(', ') | length - 1 }}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="news">
+            <p style="color: #828282" align="center">Your news feed is still empty</p>
+            <img src="{{ url_for('static', filename='img/no_news.png') }}"
+                 style="width: 100px;margin-top: 30px;margin-left: 40%;" align="center">
+        </div>
+    {% endif %}
+    </div>
+{% endblock %}

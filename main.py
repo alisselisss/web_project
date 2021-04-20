@@ -677,9 +677,9 @@ def chats():
                            )
 
 
-@app.route('/like/<news_id>', methods=['GET', 'POST'])
+@app.route('/like/<news_id>/<back>', methods=['GET', 'POST'])
 @login_required
-def like(news_id):
+def like(news_id, back):
     db_sess = db_session.create_session()
     news = db_sess.query(News).filter(News.id == int(news_id)).first()
     if str(current_user.id) in news.likes.split(', '):
@@ -690,12 +690,14 @@ def like(news_id):
         news.likes += ', ' + str(current_user.id)
     db_sess.merge(news)
     db_sess.commit()
+    if back == 'newstape':
+        return redirect(f'/newstape')
     return redirect(f'/account/{db_sess.query(User).filter(User.id == news.user_id).first().username}')
 
 
-@app.route('/add_news', methods=['GET', 'POST'])
+@app.route('/add_news/<back>', methods=['GET', 'POST'])
 @login_required
-def add_news():
+def add_news(back):
     db_sess = db_session.create_session()
     news = News(
         user_id=current_user.id,
@@ -703,17 +705,38 @@ def add_news():
     )
     db_sess.add(news)
     db_sess.commit()
+    if back == 'newstape':
+        return redirect(f'/newstape')
     return redirect(f'/account/{current_user.username}')
 
 
-@app.route('/delete_news/<news_id>', methods=['GET', 'POST'])
+@app.route('/delete_news/<news_id>/<back>', methods=['GET', 'POST'])
 @login_required
-def delete_news(news_id):
+def delete_news(news_id, back):
     db_sess = db_session.create_session()
     news = db_sess.query(News).filter(News.id == int(news_id)).first()
     db_sess.delete(news)
     db_sess.commit()
+    if back == 'newstape':
+        return redirect(f'/newstape')
     return redirect(f'/account/{current_user.username}')
+
+
+@app.route('/newstape', methods=['GET', 'POST'])
+@login_required
+def newstape():
+    db_sess = db_session.create_session()
+    newslist = []
+    for news in db_sess.query(News).all():
+        if str(news.user_id) in current_user.following.split(', ') or\
+                news.user_id == current_user.id:
+            newslist += [news]
+    return render_template('newstape.html', title='News',
+                           url_for=url_for, user_class=User, userlist=get_userlist(),
+                           css_file=url_for('static', filename='css/style.css'),
+                           newslist=newslist[::-1],
+                           str=str, db_sess_query_user=db_sess.query(User), datetime=datetime
+                           )
 
 
 if __name__ == '__main__':
