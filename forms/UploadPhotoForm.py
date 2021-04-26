@@ -4,5 +4,5 @@ from wtforms import SubmitField
 
 
 class UploadPhotoForm(FlaskForm):
-    upload = FileField('image', validators=[FileRequired(), FileAllowed(['jpg', 'png'])])
-    further = SubmitField('further')
+    upload = FileField('image', validators=[FileAllowed(['jpg', 'png'])])
+    further = SubmitField('Next')

@@ -5,4 +5,4 @@ from wtforms.validators import DataRequired
 
 class ChangePasswordOldPasswordForm(FlaskForm):
     password = PasswordField('Old password', validators=[DataRequired()])
-    submit = SubmitField('Further')
+    submit = SubmitField('Next')

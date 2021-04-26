@@ -12,3 +12,4 @@ class News(SqlAlchemyBase):
     news_text = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     creation_time = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
     likes = sqlalchemy.Column(sqlalchemy.String, nullable=True, default=' ')
+    dislikes = sqlalchemy.Column(sqlalchemy.String, nullable=True, default=' ')

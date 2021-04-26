@@ -1,0 +1,227 @@
+.brright {
+    border-right: 1px solid #999;
+    margin-right: 25px;
+    padding-right: 25px;
+}
+
+.opt {
+    width: 100px;
+}
+
+.itsme {
+    background-color: #fafafa;
+    border-radius: 20px;
+    height: 100px;
+    width: 650px;
+    margin: 20px;
+}
+
+.round {
+    width: 80px;
+    border-radius: 80px;
+    float: left;
+    margin: 10px;
+    font-size: 27px;
+}
+
+.params {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    float: left;
+    position: absolute;
+    width: 200px;
+}
+
+.block {
+    margin: 40px;
+}
+
+.selected {
+    border-right: 3px solid #424954;
+    background: #f0f2f5;
+}
+
+table {
+    border: 1px solid #e9ecf2;
+    border-radius: 10px;
+    width: 300px;
+    margin-left: 50px;
+}
+
+.information {
+    margin-left: 325px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    position: absolute;
+    width: 500px;
+}
+
+td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    border-bottom: 1px solid #e9ecf2;
+}
+
+.icon {
+    width: 30px;
+    border-radius: 30px;
+    float: left;
+    margin: 20px;
+    font-size: 27px;
+}
+
+.table_information {
+    width: 600px;
+}
+
+table a, .table_information a {
+    color: #081e45;
+    display: block;
+    height: 100%;
+}
+
+table p {
+    color: #727985;
+}
+
+.news a {
+    color: #081e45;
+}
+
+.news {
+    background-color: #fafafa;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.chats {
+    margin-left: 0px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    position: absolute;
+    width: 600px;
+}
+
+.settingsback {
+    margin-bottom: 0px;
+    float:left;
+    position: absolute;
+}
+
+.all-messages-box {
+    position: absolute;
+    height: 80%;
+    width: 100%;
+    overflow: auto;
+}
+
+.message-table {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.about-chat {
+    height: 10%;
+    width: 100%;
+}
+
+.send-message {
+    height: 5%;
+    width: 100%;
+    padding: 0px;
+}
+
+.message {
+    border-top: 1px solid #ebebeb;
+    float: bottom;
+}
+
+.messenger {
+    position: absolute;
+    width: 45%;
+    height: 75%;
+    float: bottom;
+}
+
+.form-send-message {
+    padding: 11px;
+    float: bottom;
+    margin-bottom: 10px;
+}
+
+    @-webkit-keyframes swing {
+20% {
+-webkit-transform: rotate3d(0, 0, 1, 15deg);
+transform: rotate3d(0, 0, 1, 15deg);
+}
+
+40% {
+-webkit-transform: rotate3d(0, 0, 1, -10deg);
+transform: rotate3d(0, 0, 1, -10deg);
+}
+
+60% {
+-webkit-transform: rotate3d(0, 0, 1, 5deg);
+transform: rotate3d(0, 0, 1, 5deg);
+}
+
+80% {
+-webkit-transform: rotate3d(0, 0, 1, -5deg);
+transform: rotate3d(0, 0, 1, -5deg);
+}
+
+100% {
+-webkit-transform: rotate3d(0, 0, 1, 0deg);
+transform: rotate3d(0, 0, 1, 0deg);
+}
+}
+
+@keyframes swing {
+20% {
+-webkit-transform: rotate3d(0, 0, 1, 15deg);
+-ms-transform: rotate3d(0, 0, 1, 15deg);
+transform: rotate3d(0, 0, 1, 15deg);
+}
+
+40% {
+-webkit-transform: rotate3d(0, 0, 1, -10deg);
+-ms-transform: rotate3d(0, 0, 1, -10deg);
+transform: rotate3d(0, 0, 1, -10deg);
+}
+
+60% {
+-webkit-transform: rotate3d(0, 0, 1, 5deg);
+-ms-transform: rotate3d(0, 0, 1, 5deg);
+transform: rotate3d(0, 0, 1, 5deg);
+}
+
+80% {
+-webkit-transform: rotate3d(0, 0, 1, -5deg);
+-ms-transform: rotate3d(0, 0, 1, -5deg);
+transform: rotate3d(0, 0, 1, -5deg);
+}
+
+100% {
+-webkit-transform: rotate3d(0, 0, 1, 0deg);
+-ms-transform: rotate3d(0, 0, 1, 0deg);
+transform: rotate3d(0, 0, 1, 0deg);
+}
+}
+
+.swing1 {
+-webkit-animation-duration: 10s;
+animation-duration: 10s;
+-webkit-animation-fill-mode: both;
+animation-fill-mode: both;
+-webkit-transform-origin: top center;
+-ms-transform-origin: top center;
+transform-origin: top center;
+-webkit-animation-name: swing;
+animation-name: swing;
+}
+

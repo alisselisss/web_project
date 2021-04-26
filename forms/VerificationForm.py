@@ -5,4 +5,4 @@ from wtforms.validators import DataRequired
 
 class VerificationForm(FlaskForm):
     verification = IntegerField('Verification code', validators=[DataRequired()])
-    further = SubmitField('further')
+    further = SubmitField('Next')

@@ -6,4 +6,4 @@ from wtforms.validators import DataRequired
 
 class AboutMeForm(FlaskForm):
     about = TextAreaField('Tell other users a little information about yourself')
-    further = SubmitField('Further')
+    further = SubmitField('Next')
