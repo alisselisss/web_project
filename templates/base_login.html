@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-.parallax {
-    /* The image used */
-    background-image: url("static/img/img_parallax.jpg");
-    filter: alpha(Opacity=80);
-    opacity: 0.8;
-    /* Set a specific height */
-    min-height: 200px;
-
-    /* Create the parallax scrolling effect */
+    <style>
+       body {
+    background-image: url("static/img/backg.jpg");
     background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
     background-size: cover;
-}
-
-.move {
+    }
+        .footer {
+    position: fixed;
+    left: 0; bottom: 0;
+    padding: 10px;
+    background: #343a40;
+    color: #ffffff;
+    width: 100%;
     text-align: center;
     }
 
-</style>
+    .move {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    }
 
+
+
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet"
@@ -32,14 +35,17 @@
           crossorigin="anonymous">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link rel="stylesheet" type="text/css" href={{ css_file }}>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>{{ title }}</title>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-dark bg-dark">
             <a class="navbar-brand" href="#">
-                <img src="static/img/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                <img src="static/img/startwi-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+
                 StarTwi
+
             </a>
             <form class="d-flex">
         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
@@ -47,12 +53,14 @@
       </form>
         </nav>
     </header>
-    <div class="parallax"><h1 align="center"><br><font size="10" color="#E0FFFF" face="fantasy"><b>
+<font size="10" color="#E0FFFF" face="fantasy"><b>
         <i>{{ bg_text }}</i></b></font>
-        </h1>
-        </div>
+
     <main role="main" class="container">
         {% block content %}{% endblock %}
     </main>
+  <div class="footer">
+      &copy; StarTwi Development team, all questions <a href="mailto:dashastepanova1901@mail.ru">@startwi_admin.gmail.com</a>
+  </div>
 </body>
 </html>

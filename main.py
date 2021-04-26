@@ -12,6 +12,7 @@ from werkzeug.utils import redirect, secure_filename
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_mail import Mail, Message
 from flask_migrate import Migrate, MigrateCommand
+from cryptography.fernet import Fernet
 
 from data.users import User
 from data.messages import Messages
@@ -46,6 +47,7 @@ app.config['MAIL_USERNAME'] = 'webproject0909@gmail.com'
 app.config['MAIL_DEFAULT_SENDER'] = 'webproject0909@gmail.com'
 app.config['MAIL_PASSWORD'] = 'qqqppp123456789'
 
+cipher_key = 'APM1JDVgT8WDGOWBgQv6EIhvxl4vDYvUnVdg-Vjdt0o='
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 db = SQLAlchemy(app)
@@ -53,11 +55,15 @@ migrate = Migrate(app, db)
 mail = Mail(app)
 
 
+# Запуск основной программы
 def main():
     db_session.global_init("db/twitter2.db")
-    app.run(host='127.0.0.1', port=8080)
+    # app.run(host='127.0.0.1', port=8080)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
 
 
+# Начальная страница
 @app.route('/')
 @app.route('/index')
 def welcome_page():
@@ -65,12 +71,14 @@ def welcome_page():
     return render_template('welcome.html', title='Добро пожаловать', bg_text='')
 
 
+# Загрузка пользователя
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 
+# Выход из аккаунта
 @app.route('/logout')
 @login_required
 def logout():
@@ -78,6 +86,7 @@ def logout():
     return redirect("/")
 
 
+# Вход уже зарегистрировавшегося пользователя
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -91,46 +100,13 @@ def login():
                 return redirect('/account/' + user.username)
         except Exception:
             return render_template('login.html',
-                                   message="Такого пользоватея не существует",
+                                   message="Такого пользователя не существует",
                                    form=form, bg_size=200)
     return render_template('login.html', title='Authorization', form=form,
                            css_file=url_for('static', filename='css/style.css'))
 
 
-@app.route('/send_verification')
-def send_verification():
-    global verification_code, user
-    verification_code = random.randint(100000, 1000000)
-    msg = Message("подтверждение почты", recipients=[user.email])
-    msg.body = f"провер очка адреса элпочты\nлалала вам пришел код подтверждения {verification_code}\nесли вы не отправляли данный запрос то проигнорьте эту смсочку\nс уважением техподдержка twitter2"
-    mail.send(msg)
-    print(verification_code)
-    return redirect('/verification')
-
-
-@app.route('/password_reset', methods=['GET', 'POST'])
-def forgot_password():
-    global user, back
-    form = ForgotForm()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.login.data or
-                                          User.username == form.login.data).first()
-        if user:
-            back = '/password_reset'
-            return redirect("/itsme")
-    return render_template('forgot.html', title='Sign up', form=form)
-
-
-@app.route('/itsme', methods=['GET', 'POST'])
-def itsme():
-    global user
-    return render_template('itsme.html', title='Sign up', user=user,
-                           userimg=url_for('static', filename='img/' + user.photo),
-                           css_file=url_for('static', filename='css/style.css')
-                           )
-
-
+# Первоначальная регистрация в системе
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     global user, back
@@ -145,7 +121,10 @@ def reqister():
             return render_template('register.html', title='Sign up',
                                    form=form,
                                    message="This name is already exists")
-
+        if "@" not in form.email.data and len(form.email.data):
+            return render_template('register.html', title='Sign up',
+                                   form=form,
+                                   message="This email is already exists")
         user = User(
             username=form.username.data,
             email=form.email.data,
@@ -159,6 +138,44 @@ def reqister():
     return render_template('register.html', title='Sign up', form=form)
 
 
+# Отправка кода верификации на почту
+@app.route('/send_verification')
+def send_verification():
+    global verification_code, user
+    verification_code = random.randint(100000, 1000000)
+    msg = Message("Подтверждение адреса почты", recipients=[user.email])
+    msg.body = f"Проверка адреса введенной почты\n Здравствуйте, {user.username}! Вам пришёл код подтверждения {verification_code}.\nЕсли вы не отправляли данный запрос, то проигнорируйте данное сообщение.\nС уважением, \n\tтехподдержка startwi"
+    mail.send(msg)
+    print(verification_code)
+    return redirect('/verification')
+
+
+# Изменение пароля
+@app.route('/password_reset', methods=['GET', 'POST'])
+def forgot_password():
+    global user, back
+    form = ForgotForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.login.data or
+                                          User.username == form.login.data).first()
+        if user:
+            back = '/password_reset'
+            return redirect("/itsme")
+    return render_template('forgot.html', title='Sign up', form=form)
+
+
+# Подтверждение аккаунта
+@app.route('/itsme', methods=['GET', 'POST'])
+def itsme():
+    global user
+    return render_template('itsme.html', title='Sign up', user=user,
+                           userimg=url_for('static', filename='img/' + user.photo),
+                           css_file=url_for('static', filename='css/style.css')
+                           )
+
+
+# Верификация
 @app.route('/verification', methods=['GET', 'POST'])
 def verification():
     global verification_code, back
@@ -172,6 +189,7 @@ def verification():
     return render_template('verification.html', title='Sign up', form=form, back=back)
 
 
+# Смена пароля
 @app.route('/сhange_password', methods=['GET', 'POST'])
 def сhange_password():
     global user
@@ -189,6 +207,7 @@ def сhange_password():
     return render_template('changepassword.html', title='Sign up', form=form, back=back)
 
 
+# Ввод пароля при первоначальной регистрации
 @app.route('/register2', methods=['GET', 'POST'])
 def reqister2():
     global user
@@ -203,20 +222,26 @@ def reqister2():
     return render_template('register2.html', title='Register Form', form=form)
 
 
+# Загрузка фотографии на сайт
 @app.route('/upload_photo', methods=['GET', 'POST'])
 def upload_photo():
     global user
     form = UploadPhotoForm(CombinedMultiDict((request.files, request.form)))
     if form.validate_on_submit():
         f = form.upload.data
-        filename = secure_filename(f.filename)
-        f.save(os.path.join('static\img', filename))
-        user.photo = filename if filename else 'no_photo.jpg'
+        if f is not None:
+            # filename = secure_filename(f.filename)
+            filename = f.filename
+            f.save(os.path.join('static\img', filename))
+            user.photo = filename if filename else 'not-found.png'
+        else:
+            user.photo = 'not-found.png'
         return redirect('/aboutme')
 
     return render_template('uploadphoto.html', form=form)
 
 
+# Информация о себе (статус)
 @app.route('/aboutme', methods=['GET', 'POST'])
 def about_me():
     global user
@@ -231,6 +256,7 @@ def about_me():
     return render_template('aboutme.html', title='Register Form', form=form)
 
 
+# Редактировать профиль
 @app.route('/editprofile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -257,6 +283,7 @@ def edit_profile():
                            form=form, css_file=url_for('static', filename='css/style.css'))
 
 
+# Перенаправление на свой аккаунт
 @app.route('/account/<username>', methods=['GET', 'POST'])
 @login_required
 def account(username):
@@ -272,6 +299,7 @@ def account(username):
                            str=str)
 
 
+# Подписка
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
 @login_required
 def subscribe(username):
@@ -285,6 +313,7 @@ def subscribe(username):
     return redirect(f'/account/{user.username}')
 
 
+# Отписка
 @app.route('/unsubscribe/<username>', methods=['GET', 'POST'])
 @login_required
 def unsubscribe(username):
@@ -302,6 +331,7 @@ def unsubscribe(username):
     return redirect(f'/account/{user.username}')
 
 
+# Список подписок
 @app.route('/following/<username>', methods=['GET', 'POST'])
 @login_required
 def following(username):
@@ -315,6 +345,7 @@ def following(username):
                            str=str, db_sess_query_user=db_sess.query(User), user_class=User)
 
 
+# Список подписчиков
 @app.route('/followers/<username>', methods=['GET', 'POST'])
 @login_required
 def followers(username):
@@ -328,6 +359,7 @@ def followers(username):
                            str=str, db_sess_query_user=db_sess.query(User), user_class=User)
 
 
+# Настройки конкретного пользователя
 @app.route('/account_settings/<username>', methods=['GET', 'POST'])
 @login_required
 def account_settings(username):
@@ -338,6 +370,7 @@ def account_settings(username):
                            )
 
 
+# Перенаправление на удаление в настройках
 @app.route('/delete_account/<username>', methods=['GET', 'POST'])
 @login_required
 def delete_account(username):
@@ -349,6 +382,7 @@ def delete_account(username):
                            )
 
 
+# Полное удаление аккаунта пользователя из системы
 @app.route('/delete/<username>', methods=['GET', 'POST'])
 @login_required
 def delete(username):
@@ -370,11 +404,28 @@ def delete(username):
             user.following = ', '.join(following_list)
             db_sess.merge(user)
 
+    for user in db_sess.query(User).all():
+        if str(current_user.id) in user.blacklist.split(', '):
+            blacklist = user.blacklist.split(', ')
+            blacklist.remove(str(current_user.id))
+            user.blacklist = ', '.join(blacklist)
+            db_sess.merge(user)
+
+    for news in db_sess.query(News).filter(News.user_id == current_user.id).all():
+        db_sess.delete(news)
+
+    messages_list = db_sess.query(Messages).filter(
+        ((Messages.from_id == current_user.id) |
+         ((Messages.to_id == current_user.id)))).all()
+    for message in messages_list:
+        db_sess.delete(message)
+
     db_sess.delete(current_user)
     db_sess.commit()
     return redirect('/')
 
 
+# Безопасность и приватность
 @app.route('/privacy_and_security/<username>', methods=['GET', 'POST'])
 @login_required
 def privacy_and_security(username):
@@ -385,6 +436,7 @@ def privacy_and_security(username):
                            )
 
 
+# Поменять старый пароль в настройках
 @app.route('/change_old_password', methods=['GET', 'POST'])
 @login_required
 def change_old_password():
@@ -407,11 +459,11 @@ def change_old_password():
                            )
 
 
+# Смена на новый пароль
 @app.route('/new_password', methods=['GET', 'POST'])
 @login_required
 def new_password():
     db_sess = db_session.create_session()
-
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -439,6 +491,7 @@ def new_password():
                            )
 
 
+# Получить список пользователей
 def get_userlist():
     return sorted(db_session.create_session().query(User).filter(User.username != current_user.username),
                   key=lambda x: [0 if str(x.id) in current_user.following.split(', ') else 1,
@@ -449,6 +502,7 @@ def get_userlist():
                                  x.username])
 
 
+# Информация об аккаунте
 @app.route('/account_information/<username>', methods=['GET', 'POST'])
 @login_required
 def account_information(username):
@@ -459,15 +513,16 @@ def account_information(username):
                            )
 
 
-@login_required
-def account_information(username):
-    return render_template('accountinformation.html', title='',
-                           url_for=url_for, userlist=get_userlist(),
-                           css_file=url_for('static', filename='css/style.css'),
-                           params='Account settings'
-                           )
+#
+# @login_required
+# def account_information(username):
+#     return render_template('accountinformation.html', title='',
+#                            url_for=url_for, userlist=get_userlist(),
+#                            css_file=url_for('static', filename='css/style.css'),
+#                            params='Account settings'
+#                            )
 
-
+# Смена никнейма
 @app.route('/change_username', methods=['GET', 'POST'])
 @login_required
 def change_username():
@@ -499,6 +554,7 @@ def change_username():
                            )
 
 
+# Смена даты рождения
 @app.route('/change_date_of_birthday', methods=['GET', 'POST'])
 @login_required
 def change_date_of_birthday():
@@ -523,6 +579,7 @@ def change_date_of_birthday():
                            )
 
 
+# Смена страны
 @app.route('/change_country', methods=['GET', 'POST'])
 @login_required
 def change_country():
@@ -546,6 +603,7 @@ def change_country():
                            )
 
 
+# Ограничение доступа к аккаунту
 @app.route('/restrict_access', methods=['GET', 'POST'])
 @login_required
 def restrict_access():
@@ -569,6 +627,7 @@ def restrict_access():
                            )
 
 
+# Черный список
 @app.route('/blacklist', methods=['GET', 'POST'])
 @login_required
 def blacklist():
@@ -580,6 +639,7 @@ def blacklist():
                            )
 
 
+# Убрать из черного списка
 @app.route('/delete_from_blacklist/<username>', methods=['GET', 'POST'])
 @login_required
 def delete_from_blacklist(username):
@@ -593,6 +653,7 @@ def delete_from_blacklist(username):
     return redirect(f'/blacklist')
 
 
+# Добавить в черный список
 @app.route('/add_to_blacklist/<username>', methods=['GET', 'POST'])
 @login_required
 def add_to_blacklist(username):
@@ -606,6 +667,7 @@ def add_to_blacklist(username):
     return redirect(f'/unsubscribe/{user.username}')
 
 
+# Чаты пользователя
 @app.route('/messenger/<username>', methods=['GET', 'POST'])
 @login_required
 def messenger(username):
@@ -617,26 +679,33 @@ def messenger(username):
         add_message(current_user.id, user.id, form.message.data)
         return redirect(f'/messenger/{username}')
 
+    cipher = Fernet(cipher_key)
+    messages_list = db_sess.query(Messages).filter(
+        ((Messages.from_id == current_user.id) / (Messages.to_id == user.id)) | (
+                (Messages.to_id == current_user.id) / (Messages.from_id == user.id))).all()
+
     return render_template('messenger.html', title='Messenger', form=form, user=user,
                            url_for=url_for, user_class=User, userlist=get_userlist(),
                            css_file=url_for('static', filename='css/style.css'),
-                           messages_list=db_sess.query(Messages).filter(((Messages.from_id == current_user.id) / (Messages.to_id == user.id)) |
-                                                                        ((Messages.to_id == current_user.id) / (Messages.from_id == user.id))).all(),
+                           messages_list=messages_list, cipher=cipher,
                            str=str, db_sess_query_user=db_sess.query(User)
                            )
 
 
+# Добавление сообщений
 def add_message(from_id, to_id, message_text):
     db_sess = db_session.create_session()
+    cipher = Fernet(cipher_key)
     message = Messages(
         from_id=from_id,
         to_id=to_id,
-        message_text=message_text,
+        message_text=cipher.encrypt((bytes(message_text, 'utf-8')))
     )
     db_sess.add(message)
     db_sess.commit()
 
 
+# Удалить сообщение
 @app.route('/delete_message/<message_id>', methods=['GET', 'POST'])
 @login_required
 def delete_message(message_id):
@@ -648,12 +717,15 @@ def delete_message(message_id):
     return redirect(f'/messenger/{user.username}')
 
 
+# Показать все переписки пользователя
 @app.route('/chats', methods=['GET', 'POST'])
 @login_required
 def chats():
     db_sess = db_session.create_session()
-    interlocutor_id = db_sess.query(Messages).filter((Messages.from_id == current_user.id) | (Messages.to_id == current_user.id))
-    interlocutor_users = [db_sess.query(User).filter(User.id == message.from_id).first() for message in interlocutor_id] +\
+    interlocutor_id = db_sess.query(Messages).filter(
+        (Messages.from_id == current_user.id) | (Messages.to_id == current_user.id))
+    interlocutor_users = [db_sess.query(User).filter(User.id == message.from_id).first() for message in
+                          interlocutor_id] + \
                          [db_sess.query(User).filter(User.id == message.to_id).first() for message in interlocutor_id]
     interlocutor_users = [user for user in interlocutor_users if user.id != current_user.id]
     i = 0
@@ -662,21 +734,27 @@ def chats():
             interlocutor_users.remove(interlocutor_users[i])
         else:
             i += 1
-    interlocutor_users.sort(key=lambda x: list(map(lambda x: x.from_id if x.from_id != current_user.id else x.to_id, interlocutor_id))[::-1].index(x.id))
+    interlocutor_users.sort(
+        key=lambda x: list(map(lambda x: x.from_id if x.from_id != current_user.id else x.to_id, interlocutor_id))[
+                      ::-1].index(x.id))
     interlocutor_last_messages = []
     for user in interlocutor_users:
-        messages = db_sess.query(Messages).filter(((Messages.from_id == user.id) / (Messages.to_id == current_user.id)) |
-                                                                         ((Messages.to_id == user.id) / (Messages.from_id == current_user.id))).all()
+        messages = db_sess.query(Messages).filter(
+            ((Messages.from_id == user.id) / (Messages.to_id == current_user.id)) |
+            ((Messages.to_id == user.id) / (Messages.from_id == current_user.id))).all()
         if messages:
             interlocutor_last_messages.append(messages[::-1][0])
+    message = "" if interlocutor_users else "Nothing to check..."
+    cipher = Fernet(cipher_key)
     return render_template('chats.html', title='Messenger',
                            url_for=url_for, user_class=User, userlist=get_userlist(),
-                           css_file=url_for('static', filename='css/style.css'),
+                           css_file=url_for('static', filename='css/style.css'), cipher=cipher,
                            chat_list=interlocutor_users, interlocutor_last_messages=interlocutor_last_messages,
-                           str=str, db_sess_query_user=db_sess.query(User), datetime=datetime
+                           str=str, db_sess_query_user=db_sess.query(User), datetime=datetime, message_sys=message
                            )
 
 
+# Функция лайков
 @app.route('/like/<news_id>/<back>', methods=['GET', 'POST'])
 @login_required
 def like(news_id, back):
@@ -695,6 +773,27 @@ def like(news_id, back):
     return redirect(f'/account/{db_sess.query(User).filter(User.id == news.user_id).first().username}')
 
 
+# Аналогично, дизлайки
+@app.route('/dislike/<news_id>/<back>', methods=['GET', 'POST'])
+@login_required
+def dislike(news_id, back):
+    print('r43')
+    db_sess = db_session.create_session()
+    news = db_sess.query(News).filter(News.id == int(news_id)).first()
+    if str(current_user.id) in news.dislikes.split(', '):
+        news.dislikes = news.dislikes.split(', ')
+        news.dislikes.remove(str(current_user.id))
+        news.dislikes = ', '.join(news.dislikes)
+    else:
+        news.dislikes += ', ' + str(current_user.id)
+    db_sess.merge(news)
+    db_sess.commit()
+    if back == 'newstape':
+        return redirect(f'/newstape')
+    return redirect(f'/account/{db_sess.query(User).filter(User.id == news.user_id).first().username}')
+
+
+# добавление новой новости
 @app.route('/add_news/<back>', methods=['GET', 'POST'])
 @login_required
 def add_news(back):
@@ -710,6 +809,7 @@ def add_news(back):
     return redirect(f'/account/{current_user.username}')
 
 
+# удаление новости
 @app.route('/delete_news/<news_id>/<back>', methods=['GET', 'POST'])
 @login_required
 def delete_news(news_id, back):
@@ -722,13 +822,14 @@ def delete_news(news_id, back):
     return redirect(f'/account/{current_user.username}')
 
 
+# Новостная лента
 @app.route('/newstape', methods=['GET', 'POST'])
 @login_required
 def newstape():
     db_sess = db_session.create_session()
     newslist = []
     for news in db_sess.query(News).all():
-        if str(news.user_id) in current_user.following.split(', ') or\
+        if str(news.user_id) in current_user.following.split(', ') or \
                 news.user_id == current_user.id:
             newslist += [news]
     return render_template('newstape.html', title='News',

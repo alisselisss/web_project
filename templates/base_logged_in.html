@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+    .footer {
+        position: fixed;
+        left: 0; bottom: 0;
+        padding: 10px;
+        background: #343a40;
+        color: #ffffff;
+        width: 100%;
+        text-align: center;
+    }
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet"
@@ -19,11 +30,11 @@
     <header>
         <nav class="navbar navbar-dark bg-dark">
             <a class="navbar-brand" href="#">
-                <img src="static/img/bootstrap-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                <img src="/static/img/startwi-logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
                 StarTwi
             </a>
             <a href="/account/{{ current_user.username }}" style="text-decoration: none;" class="navbar-brand">
-                <img src="{{ url_for('static', filename='img/' + current_user.photo) }}" alt="" width="30" height="24" class="icon" style="margin: 0px; margin-right: 10px;">
+                <img src="{{ url_for('static', filename='img/' + current_user.photo) }}" alt="" width="30" height="30" class="icon" style="margin: 0px; margin-right: 10px;">
                 {{ current_user.username }}</a>
             <form class="d-flex" method="post" id="sample_form" name="sample_form">
                 <button class="btn btn-outline-secondary" type="submit" name="Save" id="save">Search</button>
@@ -58,12 +69,15 @@
                 <li><a href="/newstape"><img src="{{ url_for('static', filename='img/news_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
                 <li><a href="/chats"><img src="{{ url_for('static', filename='img/messenger_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
                 <li><a href="/account_settings/{{ current_user.username }}"><img src="{{ url_for('static', filename='img/settings.png') }}" style="width:30px; margin-top:20px;"></a></li>
-                <li><a href="/logout"><img src="{{ url_for('static', filename='img/exit_icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
+                <li><a href="/logout"><img src="{{ url_for('static', filename='img/exit-icon.png') }}" style="width:30px; margin-top:20px;"></a></li>
             </ul>
         </div>
         <div style="margin-left: 12%">
             {% block content %}{% endblock %}
         </div>
+          <div class="footer">
+      &copy; StarTwi Development team, all questions <a href="mailto:dashastepanova1901@mail.ru">@startwi_admin.gmail.com</a>
+  </div>
     </main>
 </body>
 </html>

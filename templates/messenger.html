@@ -20,8 +20,8 @@
                                  <a href="/account/{{ sender.username }}" style="text-decoration: none; padding-top: 3%;">{{ sender.username }} {{ message.sending_time.hour }}:{{ str(message.sending_time.minute) if (str(message.sending_time.minute)) | length == 2 else '0' + str(message.sending_time.minute) }}</a><br>
                                 {% if message.from_id == current_user.id %}
                                     <a href="/delete_message/{{ message.id }}"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5%"></a>
-                                {% endif%}
-                                {{ message.message_text }}
+                                {% endif %}
+                                {{ cipher.decrypt(message.message_text).decode('utf-8') }}
                             </div>
                         </div>
                     {% else %}
@@ -30,7 +30,7 @@
                                 <a href="/delete_message/{{ message.id }}"><img src="{{ url_for('static', filename='img/delete-icon.jpg') }}" width="15" style="float:right; margin-right: 5%"></a>
                             {% else %}
                             {% endif %}
-                            {{ message.message_text }}
+                            {{ cipher.decrypt(message.message_text).decode('utf-8') }}
                         </div>
                     {% endif %}
                 {% endfor %}
